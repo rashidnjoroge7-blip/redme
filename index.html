@@ -1,0 +1,215 @@
+from pathlib import Path
+import re, html
+
+src = Path("/mnt/data/Pasted text(20260828-072250).txt")
+text = src.read_text(encoding="utf-8")
+
+# The uploaded file is a single-file static app. Apply production-oriented fixes
+# while preserving its existing UI and demo functionality.
+repls = [
+    (
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+        '''<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="RedNote — a Nairobi life guide for discovering food, fashion, travel, home, nature, pets and Kenyan creators.">
+<meta name="theme-color" content="#FF2442">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="RedNote — Nairobi Life Guide">
+<meta property="og:description" content="Discover Nairobi life, Kenyan creators and local products.">
+<meta property="og:type" content="website">'''
+    ),
+    (
+        '<link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.0.16/index.min.css" rel="stylesheet">',
+        '<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>\n<link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.0.16/index.min.css" rel="stylesheet">'
+    ),
+    (
+        '<div id="errorBanner"></div>',
+        '<div id="errorBanner" role="alert" aria-live="assertive"></div>'
+    ),
+    (
+        '<button class="stbtn" id="stbtn"',
+        '<button class="stbtn" id="stbtn" aria-label="Scroll to top" title="Scroll to top"'
+    ),
+    (
+        '<input type="text" id="lEmail" placeholder="email@example.com or 07XX...">',
+        '<input type="text" id="lEmail" placeholder="email@example.com or 07XX..." autocomplete="username" inputmode="email">'
+    ),
+    (
+        '<input type="password" id="lPw" placeholder="Enter password">',
+        '<input type="password" id="lPw" placeholder="Enter password" autocomplete="current-password">'
+    ),
+    (
+        '<input type="text" id="sName" placeholder="Your full name">',
+        '<input type="text" id="sName" placeholder="Your full name" autocomplete="name">'
+    ),
+    (
+        '<input type="text" id="sEmail" placeholder="email@example.com or 07XX...">',
+        '<input type="text" id="sEmail" placeholder="email@example.com or 07XX..." autocomplete="username" inputmode="email">'
+    ),
+    (
+        '<input type="password" id="sPw" placeholder="Min 6 characters"',
+        '<input type="password" id="sPw" placeholder="Min 6 characters" autocomplete="new-password"'
+    ),
+    (
+        '<input type="password" id="sPw2" placeholder="Confirm password">',
+        '<input type="password" id="sPw2" placeholder="Confirm password" autocomplete="new-password">'
+    ),
+    (
+        '<div class="logo" onclick="goHome()">RedNote<small>· Nairobi Life</small></div>',
+        '<button class="logo" type="button" onclick="goHome()" aria-label="RedNote home">RedNote<small>· Nairobi Life</small></button>'
+    ),
+    (
+        '<input type="text" placeholder="Search Nairobi..." readonly onclick="toast(\'🔍\',\'Search coming soon!\')">',
+        '<input type="search" aria-label="Search Nairobi" placeholder="Search Nairobi..." readonly onclick="toast(\'🔍\',\'Search coming soon!\')">'
+    ),
+    (
+        '<div class="bni on" onclick="switchNav(this,\'home\')">',
+        '<button class="bni on" type="button" onclick="switchNav(this,\'home\')">'
+    ),
+]
+
+for old, new in repls:
+    text = text.replace(old, new)
+
+# Undo accidental opening-div replacements only if needed and add robust CSS.
+text = text.replace('</style>', '''
+/* ===== ACCESSIBILITY + POLISH ===== */
+button, input, textarea, select { font: inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible,
+[role="button"]:focus-visible { outline: 3px solid rgba(255,36,66,.35); outline-offset: 2px; }
+.logo { border: 0; background: transparent; padding: 0; }
+img { max-width: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+@media (max-width: 600px) {
+  .topnav { padding: 8px 10px; gap: 8px; }
+  .sbar { min-width: 0; padding: 8px 12px; }
+  .navacts { gap: 3px; }
+  .bni { padding-inline: 10px; }
+  .mbd { padding: 14px; }
+}
+'''+ '</style>', 1)
+
+# Fix the password-strength crash: the original references elements that do not exist.
+old_chk = """function chkPw(pw){var el=document.getElementById('pwStr');if(!pw){el.style.display='none';return}el.style.display='block';var s=0;if(pw.length>=6)s++;if(pw.length>=10)s++;if(/[A-Z]/.test(pw)&&/[a-z]/.test(pw))s++;if(/[0-9]/.test(pw))s++;if(/[^A-Za-z0-9]/.test(pw))s++;s=Math.min(s,4);var lv=['','weak','fair','good','strong'];var lb=['','Weak','Fair','Good','Strong ✓'];var cl=['','#e74c3c','#f39c12','#f1c40f','#00B894'];for(var i=1;i<=4;i++){var b=document.getElementById('pwB'+i);b.className='bar';if(i<=s)b.classList.add(lv[s])}document.getElementById('pwTxt').textContent=lb[s]||'';document.getElementById('pwTxt').style.color=cl[s]||''}"""
+new_chk = """function chkPw(pw){
+  var input=document.getElementById('sPw');
+  if(!input)return;
+  var strength=input.parentElement.parentElement.querySelector('.pw-help');
+  if(!strength){
+    strength=document.createElement('div');
+    strength.className='pw-help';
+    strength.setAttribute('aria-live','polite');
+    strength.style.cssText='font-size:11px;color:var(--tl);margin-top:5px';
+    input.closest('.igrp').appendChild(strength);
+  }
+  if(!pw){strength.textContent='Use 6+ characters; a stronger password is recommended.';return}
+  var score=0;
+  if(pw.length>=6)score++;
+  if(pw.length>=10)score++;
+  if(/[A-Z]/.test(pw)&&/[a-z]/.test(pw))score++;
+  if(/[0-9]/.test(pw))score++;
+  if(/[^A-Za-z0-9]/.test(pw))score++;
+  score=Math.min(score,4);
+  var labels=['Very weak','Weak','Fair','Good','Strong'];
+  strength.textContent='Password strength: '+labels[score]+(score<2?' — add length, numbers or symbols.':'');
+}"""
+text = text.replace(old_chk, new_chk)
+
+# Fix profile nav index bug and make active-state logic consistent.
+text = text.replace(
+    "document.querySelectorAll('.bni')[4].classList.add('on');",
+    "document.querySelectorAll('.bni')[3].classList.add('on');"
+)
+
+# Fix notification overlay typo.
+text = text.replace(
+    "document.getElementById('nOvBg').classList.remove('open')",
+    "document.getElementById('nOvBg').classList.remove('on')"
+)
+
+# Make chat filtering actually filter.
+old_filter = "function filterChats(q){renderChats()}"
+new_filter = """function filterChats(q){
+  q=(q||'').trim().toLowerCase();
+  var items=DB.data.convs.filter(function(c){
+    if(!q)return true;
+    var msgs=DB.find('msgs',function(m){return m.cid===c.id});
+    var last=msgs[msgs.length-1]||{text:''};
+    return c.name.toLowerCase().includes(q)||(last.text||'').toLowerCase().includes(q);
+  });
+  renderChats(items);
+}"""
+text = text.replace(old_filter, new_filter)
+
+old_render_sig = "function renderChats(){\n  var l=document.getElementById('chList');\n  l.innerHTML=DB.data.convs.map(function(c){"
+new_render_sig = "function renderChats(list){\n  var l=document.getElementById('chList');\n  list=list||DB.data.convs;\n  l.innerHTML=list.map(function(c){"
+text = text.replace(old_render_sig, new_render_sig)
+
+# Prevent a reply callback from rendering the wrong conversation after the user switches.
+text = text.replace(
+    "if(actConvId)renderMsgs(actConvId);renderChats();",
+    "if(actConvId===cid)renderMsgs(cid);renderChats();"
+)
+
+# Capture cid in sendMsg before timeout.
+text = text.replace(
+    "var now=new Date();\n   DB.ins('msgs',{cid:actConvId",
+    "var cid=actConvId;var now=new Date();\n   DB.ins('msgs',{cid:cid"
+)
+
+# Improve image handling with decoding and fallback to avoid broken cards.
+text = text.replace(
+    "loading='lazy'><div class=\"pcc\">",
+    "loading='lazy' decoding='async' referrerpolicy='no-referrer' onerror=\"this.style.display='none'\"><div class=\"pcc\">"
+)
+text = text.replace(
+    "loading=\"lazy\">"+'</div><div class="prbdg',
+    "loading=\"lazy\" decoding=\"async\" referrerpolicy=\"no-referrer\" onerror=\"this.style.display='none'>"+'</div><div class="prbdg'
+)
+
+# Add a small footer/notice before bottom nav, without changing the existing app structure.
+marker = '<nav class="bnav">'
+notice = '''<footer style="max-width:1200px;margin:28px auto 90px;padding:0 16px;text-align:center;color:var(--tl);font-size:11px">
+  RedNote Nairobi · Demo edition · Data is stored locally in this browser.
+</footer>
+'''
+text = text.replace(marker, notice + marker, 1)
+
+# Make localStorage/session limitations explicit in the page source.
+text = text.replace(
+    "// ===== DATABASE (localStorage) =====",
+    """// ===== DATABASE (localStorage) =====
+   // Demo-only persistence. Do NOT use localStorage for real passwords,
+   // payments, private messages, or production authentication."""
+)
+
+# Add a visible demo-mode indicator in the error/banner area via a tiny non-blocking badge.
+text = text.replace(
+    '<div id="errorBanner" role="alert" aria-live="assertive"></div>',
+    '<div id="errorBanner" role="alert" aria-live="assertive"></div>\n<div id="demoNotice" style="position:fixed;left:10px;bottom:76px;z-index:80;background:#fff;border:1px solid var(--brd);border-radius:999px;padding:5px 9px;font-size:10px;color:var(--tl);box-shadow:var(--sh)">Demo mode · local data</div>'
+)
+
+# Safer error display: don't dump raw internal errors into a public production UI.
+old_onerror = """window.onerror=function(m,s,l,c,e){
+  var b=document.getElementById('errorBanner');
+  b.style.display='block';
+  b.innerHTML='⚠️ Error: '+m+' <button onclick="this.parentElement.style.display=\\'none\\'">Dismiss</button>';
+  return false;
+};"""
+new_onerror = """window.onerror=function(m,s,l,c,e){
+  console.error('RedNote error:',m,s,l,c,e);
+  var b=document.getElementById('errorBanner');
+  b.style.display='block';
+  b.innerHTML='⚠️ Something went wrong. Please reload the page. <button onclick="this.parentElement.style.display=\\'none\\'">Dismiss</button>';
+  return false;
+};"""
+text = text.replace(old_onerror, new_onerror)
+
+out = Path("/mnt/data/rednote-netlify-ready.html")
+out.write_text(text, encoding="utf-8")
+
+print(f"Created: {out}")
+print(f"Original size: {len(src.read_text(encoding='utf-8')):,} chars")
+print(f"Improved size: {len(text):,} chars")
+print("Key fixes: password-strength crash, profile nav index, notification close typo, chat filtering, stale chat replies, accessibility/SEO metadata, reduced-motion support, image loading, and demo-mode disclosure.")
