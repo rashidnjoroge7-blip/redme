@@ -1,77 +1,43 @@
-from pathlib import Path
-import re, html
-
-src = Path("/mnt/data/Pasted text(20260828-072250).txt")
-text = src.read_text(encoding="utf-8")
-
-# The uploaded file is a single-file static app. Apply production-oriented fixes
-# while preserving its existing UI and demo functionality.
-repls = [
-    (
-        '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
-        '''<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="RedNote — a Nairobi life guide for discovering food, fashion, travel, home, nature, pets and Kenyan creators.">
-<meta name="theme-color" content="#FF2442">
-<meta name="color-scheme" content="light">
-<meta property="og:title" content="RedNote — Nairobi Life Guide">
-<meta property="og:description" content="Discover Nairobi life, Kenyan creators and local products.">
-<meta property="og:type" content="website">'''
-    ),
-    (
-        '<link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.0.16/index.min.css" rel="stylesheet">',
-        '<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>\n<link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.0.16/index.min.css" rel="stylesheet">'
-    ),
-    (
-        '<div id="errorBanner"></div>',
-        '<div id="errorBanner" role="alert" aria-live="assertive"></div>'
-    ),
-    (
-        '<button class="stbtn" id="stbtn"',
-        '<button class="stbtn" id="stbtn" aria-label="Scroll to top" title="Scroll to top"'
-    ),
-    (
-        '<input type="text" id="lEmail" placeholder="email@example.com or 07XX...">',
-        '<input type="text" id="lEmail" placeholder="email@example.com or 07XX..." autocomplete="username" inputmode="email">'
-    ),
-    (
-        '<input type="password" id="lPw" placeholder="Enter password">',
-        '<input type="password" id="lPw" placeholder="Enter password" autocomplete="current-password">'
-    ),
-    (
-        '<input type="text" id="sName" placeholder="Your full name">',
-        '<input type="text" id="sName" placeholder="Your full name" autocomplete="name">'
-    ),
-    (
-        '<input type="text" id="sEmail" placeholder="email@example.com or 07XX...">',
-        '<input type="text" id="sEmail" placeholder="email@example.com or 07XX..." autocomplete="username" inputmode="email">'
-    ),
-    (
-        '<input type="password" id="sPw" placeholder="Min 6 characters"',
-        '<input type="password" id="sPw" placeholder="Min 6 characters" autocomplete="new-password"'
-    ),
-    (
-        '<input type="password" id="sPw2" placeholder="Confirm password">',
-        '<input type="password" id="sPw2" placeholder="Confirm password" autocomplete="new-password">'
-    ),
-    (
-        '<div class="logo" onclick="goHome()">RedNote<small>· Nairobi Life</small></div>',
-        '<button class="logo" type="button" onclick="goHome()" aria-label="RedNote home">RedNote<small>· Nairobi Life</small></button>'
-    ),
-    (
-        '<input type="text" placeholder="Search Nairobi..." readonly onclick="toast(\'🔍\',\'Search coming soon!\')">',
-        '<input type="search" aria-label="Search Nairobi" placeholder="Search Nairobi..." readonly onclick="toast(\'🔍\',\'Search coming soon!\')">'
-    ),
-    (
-        '<div class="bni on" onclick="switchNav(this,\'home\')">',
-        '<button class="bni on" type="button" onclick="switchNav(this,\'home\')">'
-    ),
-]
-
-for old, new in repls:
-    text = text.replace(old, new)
-
-# Undo accidental opening-div replacements only if needed and add robust CSS.
-text = text.replace('</style>', '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="description" content="RedNote — a Nairobi life guide for discovering food, fashion, travel, home, nature, pets and Kenyan creators.">
+    <meta name="theme-color" content="#FF2442">
+    <meta name="color-scheme" content="light">
+    <meta property="og:title" content="RedNote — Nairobi Life Guide">
+    <meta property="og:description" content="Discover Nairobi life, Kenyan creators and local products.">
+    <meta property="og:type" content="website">
+    <title>RedNote — Nairobi Life</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/fontsource-inter@5.0.16/index.min.css" rel="stylesheet">
+    <style>
+:root { --clr: #FF2442; --bg: #FAFAFA; --txt: #1a1a1a; --tl: #999; --brd: #eee; --shadow: 0 2px 8px rgba(0,0,0,0.08); }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--txt); line-height: 1.6; }
+.topnav { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fff; box-shadow: var(--shadow); gap: 12px; position: sticky; top: 0; z-index: 100; }
+.logo { border: 0; background: transparent; padding: 0; font-size: 18px; font-weight: 700; cursor: pointer; color: var(--clr); display: flex; align-items: center; gap: 4px; }
+.logo small { font-size: 12px; color: var(--tl); font-weight: normal; }
+.sbar { flex: 1; max-width: 300px; padding: 8px 12px; border: 1px solid var(--brd); border-radius: 4px; font-size: 13px; color: var(--tl); }
+.navacts { display: flex; gap: 8px; }
+.navbtn { background: transparent; border: 0; color: var(--clr); cursor: pointer; font-size: 18px; padding: 4px 8px; }
+.mbd { background: #fff; border-radius: 8px; padding: 16px; margin: 12px; box-shadow: var(--shadow); }
+.mbd h2 { font-size: 20px; margin-bottom: 16px; }
+.igrp { margin-bottom: 16px; }
+.igrp label { display: block; font-size: 12px; color: var(--tl); margin-bottom: 4px; font-weight: 600; }
+.igrp input, .igrp textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--brd); border-radius: 4px; font-size: 14px; font-family: inherit; }
+.igrp input:focus, .igrp textarea:focus { outline: none; border-color: var(--clr); box-shadow: 0 0 0 3px rgba(255,36,66,0.1); }
+.btn { background: var(--clr); color: #fff; border: 0; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.btn:hover { opacity: 0.9; }
+.bnav { display: flex; justify-content: space-around; padding: 12px; background: #fff; border-top: 1px solid var(--brd); position: fixed; bottom: 0; width: 100%; left: 0; z-index: 99; }
+.bni { background: transparent; border: 0; color: var(--tl); cursor: pointer; font-size: 24px; padding: 8px 12px; border-radius: 4px; transition: all 0.2s; }
+.bni.on { color: var(--clr); }
+.stbtn { position: fixed; bottom: 90px; right: 20px; background: var(--clr); color: #fff; border: 0; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; font-size: 20px; box-shadow: var(--shadow); display: none; z-index: 98; }
+.stbtn.show { display: flex; align-items: center; justify-content: center; }
+#errorBanner { display: none; background: #fee; color: #c33; padding: 12px 16px; border-bottom: 1px solid #fcc; font-size: 13px; }
+#demoNotice { position: fixed; left: 10px; bottom: 76px; z-index: 80; background: #fff; border: 1px solid var(--brd); border-radius: 4px; padding: 6px 10px; font-size: 10px; color: var(--tl); box-shadow: var(--shadow); }
+.pw-help { font-size: 11px; color: var(--tl); margin-top: 5px; }
 /* ===== ACCESSIBILITY + POLISH ===== */
 button, input, textarea, select { font: inherit; }
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible,
@@ -88,128 +54,263 @@ img { max-width: 100%; }
   .bni { padding-inline: 10px; }
   .mbd { padding: 14px; }
 }
-'''+ '</style>', 1)
+    </style>
+</head>
+<body>
+    <div class="topnav">
+        <button class="logo" type="button" onclick="goHome()" aria-label="RedNote home">RedNote<small>· Nairobi Life</small></button>
+        <input type="search" aria-label="Search Nairobi" class="sbar" placeholder="Search Nairobi..." readonly onclick="toast('🔍','Search coming soon!')">
+        <div class="navacts">
+            <button class="navbtn" onclick="alert('Notifications')">🔔</button>
+        </div>
+    </div>
 
-# Fix the password-strength crash: the original references elements that do not exist.
-old_chk = """function chkPw(pw){var el=document.getElementById('pwStr');if(!pw){el.style.display='none';return}el.style.display='block';var s=0;if(pw.length>=6)s++;if(pw.length>=10)s++;if(/[A-Z]/.test(pw)&&/[a-z]/.test(pw))s++;if(/[0-9]/.test(pw))s++;if(/[^A-Za-z0-9]/.test(pw))s++;s=Math.min(s,4);var lv=['','weak','fair','good','strong'];var lb=['','Weak','Fair','Good','Strong ✓'];var cl=['','#e74c3c','#f39c12','#f1c40f','#00B894'];for(var i=1;i<=4;i++){var b=document.getElementById('pwB'+i);b.className='bar';if(i<=s)b.classList.add(lv[s])}document.getElementById('pwTxt').textContent=lb[s]||'';document.getElementById('pwTxt').style.color=cl[s]||''}"""
-new_chk = """function chkPw(pw){
-  var input=document.getElementById('sPw');
-  if(!input)return;
-  var strength=input.parentElement.parentElement.querySelector('.pw-help');
-  if(!strength){
-    strength=document.createElement('div');
-    strength.className='pw-help';
-    strength.setAttribute('aria-live','polite');
-    strength.style.cssText='font-size:11px;color:var(--tl);margin-top:5px';
+    <div id="errorBanner" role="alert" aria-live="assertive"></div>
+    <div id="demoNotice">Demo mode · local data</div>
+
+    <!-- HOME -->
+    <div id="homePage" class="page">
+        <div class="mbd">
+            <h2>Welcome to RedNote</h2>
+            <p>Discover Nairobi life, Kenyan creators, and local products.</p>
+            <button class="btn" onclick="switchPage('auth')">Get Started</button>
+        </div>
+    </div>
+
+    <!-- AUTH -->
+    <div id="authPage" class="page" style="display:none;">
+        <div class="mbd">
+            <h2>Sign In</h2>
+            <div class="igrp">
+                <label>Email or Phone</label>
+                <input type="text" id="lEmail" placeholder="email@example.com or 07XX..." autocomplete="username" inputmode="email">
+            </div>
+            <div class="igrp">
+                <label>Password</label>
+                <input type="password" id="lPw" placeholder="Enter password" autocomplete="current-password">
+            </div>
+            <button class="btn" onclick="login()">Sign In</button>
+            <p style="margin-top:16px; font-size:13px; color:var(--tl);">
+                No account? <a href="#" onclick="switchPage('signup')">Sign up</a>
+            </p>
+        </div>
+
+        <div class="mbd">
+            <h2>Sign Up</h2>
+            <div class="igrp">
+                <label>Full Name</label>
+                <input type="text" id="sName" placeholder="Your full name" autocomplete="name">
+            </div>
+            <div class="igrp">
+                <label>Email or Phone</label>
+                <input type="text" id="sEmail" placeholder="email@example.com or 07XX..." autocomplete="username" inputmode="email">
+            </div>
+            <div class="igrp">
+                <label>Password</label>
+                <input type="password" id="sPw" placeholder="Min 6 characters" autocomplete="new-password" onkeyup="chkPw(this.value)">
+            </div>
+            <div class="igrp">
+                <label>Confirm Password</label>
+                <input type="password" id="sPw2" placeholder="Confirm password" autocomplete="new-password">
+            </div>
+            <button class="btn" onclick="signup()">Sign Up</button>
+        </div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="chatPage" class="page" style="display:none;">
+        <div class="mbd">
+            <h2>Messages</h2>
+            <div id="chList"></div>
+        </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="profilePage" class="page" style="display:none;">
+        <div class="mbd">
+            <h2>Profile</h2>
+            <p>Your profile information here.</p>
+            <button class="btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <nav class="bnav">
+        <button class="bni on" type="button" onclick="switchNav(this,'home')" aria-label="Home">🏠</button>
+        <button class="bni" type="button" onclick="switchNav(this,'chat')" aria-label="Messages">💬</button>
+        <button class="bni" type="button" onclick="switchNav(this,'profile')" aria-label="Profile">👤</button>
+    </nav>
+
+    <button class="stbtn" id="stbtn" aria-label="Scroll to top" title="Scroll to top" onclick="scrollToTop()">↑</button>
+
+    <footer style="max-width:1200px;margin:28px auto 90px;padding:0 16px;text-align:center;color:var(--tl);font-size:11px">
+        RedNote Nairobi · Demo edition · Data is stored locally in this browser.
+    </footer>
+
+    <script>
+// ===== DATABASE (localStorage) =====
+// Demo-only persistence. Do NOT use localStorage for real passwords,
+// payments, private messages, or production authentication.
+var DB = {
+  data: { users: [], convs: [], msgs: [] },
+  init: function() {
+    try {
+      var stored = localStorage.getItem('rednote_db');
+      if (stored) this.data = JSON.parse(stored);
+    } catch(e) { console.error('DB init error:', e); }
+  },
+  save: function() {
+    try { localStorage.setItem('rednote_db', JSON.stringify(this.data)); }
+    catch(e) { console.error('DB save error:', e); }
+  },
+  ins: function(table, obj) {
+    if (!this.data[table]) this.data[table] = [];
+    this.data[table].push(obj);
+    this.save();
+  },
+  find: function(table, pred) {
+    return (this.data[table] || []).filter(pred);
+  }
+};
+
+var actConvId = null;
+
+function goHome() { switchPage('home'); }
+
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.getElementById(page + 'Page').style.display = 'block';
+}
+
+function switchNav(el, page) {
+  document.querySelectorAll('.bni').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  switchPage(page);
+}
+
+function login() {
+  var email = document.getElementById('lEmail').value;
+  var pw = document.getElementById('lPw').value;
+  if (!email || !pw) { toast('❌', 'Please enter email and password'); return; }
+  toast('✅', 'Logged in!');
+  DB.ins('users', { email: email, name: email, loggedIn: true });
+  switchPage('chat');
+  actConvId = null;
+}
+
+function signup() {
+  var name = document.getElementById('sName').value;
+  var email = document.getElementById('sEmail').value;
+  var pw = document.getElementById('sPw').value;
+  var pw2 = document.getElementById('sPw2').value;
+  if (!name || !email || !pw || !pw2) { toast('❌', 'Please fill all fields'); return; }
+  if (pw !== pw2) { toast('❌', 'Passwords do not match'); return; }
+  if (pw.length < 6) { toast('❌', 'Password must be at least 6 characters'); return; }
+  toast('✅', 'Account created!');
+  DB.ins('users', { name: name, email: email, pw: pw });
+  switchPage('chat');
+}
+
+function chkPw(pw) {
+  var input = document.getElementById('sPw');
+  if (!input) return;
+  var strength = input.parentElement.parentElement.querySelector('.pw-help');
+  if (!strength) {
+    strength = document.createElement('div');
+    strength.className = 'pw-help';
+    strength.setAttribute('aria-live', 'polite');
+    strength.style.cssText = 'font-size:11px;color:var(--tl);margin-top:5px';
     input.closest('.igrp').appendChild(strength);
   }
-  if(!pw){strength.textContent='Use 6+ characters; a stronger password is recommended.';return}
-  var score=0;
-  if(pw.length>=6)score++;
-  if(pw.length>=10)score++;
-  if(/[A-Z]/.test(pw)&&/[a-z]/.test(pw))score++;
-  if(/[0-9]/.test(pw))score++;
-  if(/[^A-Za-z0-9]/.test(pw))score++;
-  score=Math.min(score,4);
-  var labels=['Very weak','Weak','Fair','Good','Strong'];
-  strength.textContent='Password strength: '+labels[score]+(score<2?' — add length, numbers or symbols.':'');
-}"""
-text = text.replace(old_chk, new_chk)
+  if (!pw) { strength.textContent = 'Use 6+ characters; a stronger password is recommended.'; return; }
+  var score = 0;
+  if (pw.length >= 6) score++;
+  if (pw.length >= 10) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  score = Math.min(score, 4);
+  var labels = ['Very weak', 'Weak', 'Fair', 'Good', 'Strong'];
+  strength.textContent = 'Password strength: ' + labels[score] + (score < 2 ? ' — add length, numbers or symbols.' : '');
+}
 
-# Fix profile nav index bug and make active-state logic consistent.
-text = text.replace(
-    "document.querySelectorAll('.bni')[4].classList.add('on');",
-    "document.querySelectorAll('.bni')[3].classList.add('on');"
-)
-
-# Fix notification overlay typo.
-text = text.replace(
-    "document.getElementById('nOvBg').classList.remove('open')",
-    "document.getElementById('nOvBg').classList.remove('on')"
-)
-
-# Make chat filtering actually filter.
-old_filter = "function filterChats(q){renderChats()}"
-new_filter = """function filterChats(q){
-  q=(q||'').trim().toLowerCase();
-  var items=DB.data.convs.filter(function(c){
-    if(!q)return true;
-    var msgs=DB.find('msgs',function(m){return m.cid===c.id});
-    var last=msgs[msgs.length-1]||{text:''};
-    return c.name.toLowerCase().includes(q)||(last.text||'').toLowerCase().includes(q);
+function filterChats(q) {
+  q = (q || '').trim().toLowerCase();
+  var items = DB.data.convs.filter(function(c) {
+    if (!q) return true;
+    var msgs = DB.find('msgs', function(m) { return m.cid === c.id; });
+    var last = msgs[msgs.length - 1] || { text: '' };
+    return c.name.toLowerCase().includes(q) || (last.text || '').toLowerCase().includes(q);
   });
   renderChats(items);
-}"""
-text = text.replace(old_filter, new_filter)
+}
 
-old_render_sig = "function renderChats(){\n  var l=document.getElementById('chList');\n  l.innerHTML=DB.data.convs.map(function(c){"
-new_render_sig = "function renderChats(list){\n  var l=document.getElementById('chList');\n  list=list||DB.data.convs;\n  l.innerHTML=list.map(function(c){"
-text = text.replace(old_render_sig, new_render_sig)
+function renderChats(list) {
+  var l = document.getElementById('chList');
+  list = list || DB.data.convs;
+  l.innerHTML = list.map(function(c) {
+    return '<div onclick="openChat(' + c.id + ')" style="padding:12px; border-bottom:1px solid var(--brd); cursor:pointer;">' + c.name + '</div>';
+  }).join('');
+}
 
-# Prevent a reply callback from rendering the wrong conversation after the user switches.
-text = text.replace(
-    "if(actConvId)renderMsgs(actConvId);renderChats();",
-    "if(actConvId===cid)renderMsgs(cid);renderChats();"
-)
+function openChat(cid) {
+  actConvId = cid;
+  switchPage('chat');
+  renderMsgs(cid);
+}
 
-# Capture cid in sendMsg before timeout.
-text = text.replace(
-    "var now=new Date();\n   DB.ins('msgs',{cid:actConvId",
-    "var cid=actConvId;var now=new Date();\n   DB.ins('msgs',{cid:cid"
-)
+function renderMsgs(cid) {
+  var msgs = DB.find('msgs', function(m) { return m.cid === cid; });
+  var html = msgs.map(function(m) {
+    return '<div style="padding:8px; background:' + (m.sent ? '#e8f5e9' : '#fff3cd') + ';">' + m.text + '</div>';
+  }).join('');
+  document.getElementById('chList').innerHTML = html + '<textarea id="msgInput" placeholder="Type a message..."></textarea><button class="btn" onclick="sendMsg(' + cid + ')">Send</button>';
+}
 
-# Improve image handling with decoding and fallback to avoid broken cards.
-text = text.replace(
-    "loading='lazy'><div class=\"pcc\">",
-    "loading='lazy' decoding='async' referrerpolicy='no-referrer' onerror=\"this.style.display='none'\"><div class=\"pcc\">"
-)
-text = text.replace(
-    "loading=\"lazy\">"+'</div><div class="prbdg',
-    "loading=\"lazy\" decoding=\"async\" referrerpolicy=\"no-referrer\" onerror=\"this.style.display='none'>"+'</div><div class="prbdg'
-)
+function sendMsg(cid) {
+  var cid = actConvId;
+  var input = document.getElementById('msgInput');
+  if (!input || !input.value) return;
+  var msg = input.value;
+  var now = new Date();
+  DB.ins('msgs', { cid: cid, text: msg, sent: true, time: now });
+  if (actConvId === cid) renderMsgs(cid);
+  renderChats();
+  setTimeout(function() {
+    if (actConvId === cid) {
+      DB.ins('msgs', { cid: cid, text: 'Got it!', sent: false, time: new Date() });
+      renderMsgs(cid);
+    }
+  }, 1000);
+}
 
-# Add a small footer/notice before bottom nav, without changing the existing app structure.
-marker = '<nav class="bnav">'
-notice = '''<footer style="max-width:1200px;margin:28px auto 90px;padding:0 16px;text-align:center;color:var(--tl);font-size:11px">
-  RedNote Nairobi · Demo edition · Data is stored locally in this browser.
-</footer>
-'''
-text = text.replace(marker, notice + marker, 1)
+function logout() {
+  toast('👋', 'Logged out!');
+  switchPage('home');
+  actConvId = null;
+}
 
-# Make localStorage/session limitations explicit in the page source.
-text = text.replace(
-    "// ===== DATABASE (localStorage) =====",
-    """// ===== DATABASE (localStorage) =====
-   // Demo-only persistence. Do NOT use localStorage for real passwords,
-   // payments, private messages, or production authentication."""
-)
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-# Add a visible demo-mode indicator in the error/banner area via a tiny non-blocking badge.
-text = text.replace(
-    '<div id="errorBanner" role="alert" aria-live="assertive"></div>',
-    '<div id="errorBanner" role="alert" aria-live="assertive"></div>\n<div id="demoNotice" style="position:fixed;left:10px;bottom:76px;z-index:80;background:#fff;border:1px solid var(--brd);border-radius:999px;padding:5px 9px;font-size:10px;color:var(--tl);box-shadow:var(--sh)">Demo mode · local data</div>'
-)
+function toast(emoji, msg) {
+  alert(emoji + ' ' + msg);
+}
 
-# Safer error display: don't dump raw internal errors into a public production UI.
-old_onerror = """window.onerror=function(m,s,l,c,e){
-  var b=document.getElementById('errorBanner');
-  b.style.display='block';
-  b.innerHTML='⚠️ Error: '+m+' <button onclick="this.parentElement.style.display=\\'none\\'">Dismiss</button>';
+window.addEventListener('scroll', function() {
+  var btn = document.getElementById('stbtn');
+  btn.classList.toggle('show', window.scrollY > 300);
+});
+
+window.onerror = function(m, s, l, c, e) {
+  console.error('RedNote error:', m, s, l, c, e);
+  var b = document.getElementById('errorBanner');
+  b.style.display = 'block';
+  b.innerHTML = '⚠️ Something went wrong. Please reload the page. <button onclick="this.parentElement.style.display=\'none\'">Dismiss</button>';
   return false;
-};"""
-new_onerror = """window.onerror=function(m,s,l,c,e){
-  console.error('RedNote error:',m,s,l,c,e);
-  var b=document.getElementById('errorBanner');
-  b.style.display='block';
-  b.innerHTML='⚠️ Something went wrong. Please reload the page. <button onclick="this.parentElement.style.display=\\'none\\'">Dismiss</button>';
-  return false;
-};"""
-text = text.replace(old_onerror, new_onerror)
+};
 
-out = Path("/mnt/data/rednote-netlify-ready.html")
-out.write_text(text, encoding="utf-8")
-
-print(f"Created: {out}")
-print(f"Original size: {len(src.read_text(encoding='utf-8')):,} chars")
-print(f"Improved size: {len(text):,} chars")
-print("Key fixes: password-strength crash, profile nav index, notification close typo, chat filtering, stale chat replies, accessibility/SEO metadata, reduced-motion support, image loading, and demo-mode disclosure.")
+DB.init();
+    </script>
+</body>
+</html>
