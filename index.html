@@ -1,19 +1,4 @@
-
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  background-color: white; /* Ensure the iframe has a white background */
-                }
-
-                
-              </style>
-                        </head>
-                        <body>
-                            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -28,8 +13,6 @@
 <!--  SUPABASE JAVASCRIPT SDK (loaded from CDN)                   -->
 <!-- ============================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  const SUPABASE_URL = 'https://nxuaufpgduowageizigx.supabase.co/rest/v1/';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54dWF1ZnBnZHVvd2FnZWl6aWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NzIzMTUsImV4cCI6MjEwMzQ0ODMxNX0.dtTv7elMlJkwHmlvMzQHnCNoX1eE-BNvVGNM6gK_Sto';'
 
 <style>
 :root{--clr:#FF2442;--clr-l:#FF6B81;--clr-bg:#FFF0F0;--bg:#FAFAFA;--card:#FFF;--txt:#1a1a1a;--tl:#999;--tll:#CCC;--brd:#EEE;--sh:0 2px 8px rgba(0,0,0,.08);--shh:0 8px 30px rgba(0,0,0,.12);--grn:#00B894;--blu:#0984E3;--org:#F39C12;--pur:#6C5CE7;--r:12px;--tr:all .3s cubic-bezier(.4,0,.2,1)}
@@ -471,33 +454,21 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 
 <script>
 /* ================================================================== */
-/*                                                                    */
-/*   ███████╗██╗   ██╗██████╗ ███████╗██████╗                        */
-/*   ██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗                       */
-/*   ███████╗ ╚████╔╝ ██████╔╝█████╗  ██████╔╝                       */
-/*   ╚════██║  ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗                       */
-/*   ███████║   ██║   ██║  ██║███████╗██║  ██║                       */
-/*   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝                       */
-/*                                                                    */
-/*   ⚠️  REPLACE THE TWO VALUES BELOW WITH YOUR SUPABASE CREDENTIALS */
-/*                                                                    */
-/*   1. Go to https://supabase.com/dashboard                         */
-/*   2. Select your project: rednote-nairobi                         */
-/*   3. Click Settings (gear icon) → API                             */
-/*   4. Copy "Project URL"      → paste below (replace YOUR_...)     */
-/*   5. Copy "anon public key"  → paste below (replace YOUR_...)     */
-/*                                                                    */
+/*   SUPABASE CONFIGURATION                                          */
+/*   These are your project's URL and public anon key.               */
+/*   (Settings → API in the Supabase dashboard, if you ever need     */
+/*    to regenerate or double-check them.)                           */
 /* ================================================================== */
 
-const SUPABASE_URL     = 'YOUR_SUPABASE_URL_HERE';       // ← e.g. https://abcdefg.supabase.co
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE'; // ← e.g. eyJhbGciOiJIUzI1NiIs...
+const SUPABASE_URL      = 'https://nxuaufpgduowageizigx.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54dWF1ZnBnZHVvd2FnZWl6aWd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4NzIzMTUsImV4cCI6MjEwMzQ0ODMxNX0.dtTv7elMlJkwHmlvMzQHnCNoX1eE-BNvVGNM6gK_Sto';
 
 /* ================================================================== */
 /*   END OF CONFIGURATION — DO NOT EDIT BELOW UNLESS YOU KNOW WHY     */
 /* ================================================================== */
 
 // Check if credentials are still placeholders
-const IS_CONFIGURED = SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE' && 
+const IS_CONFIGURED = SUPABASE_URL !== 'YOUR_SUPABASE_URL_HERE' &&
                       SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY_HERE';
 
 // Initialize Supabase client
@@ -624,31 +595,31 @@ async function doLogin() {
   const pw = document.getElementById('lPw').value || '';
   if (!em) { fErr('lEmailE', 'Enter email'); return; }
   if (!pw) { fErr('lPwE', 'Enter password'); return; }
-  
+
   const btn = document.getElementById('lBtn');
   btn.disabled = true; btn.textContent = 'Logging in...';
-  
+
   if (!supabase) {
     btn.disabled = false; btn.textContent = 'Log In';
     toast('❌', 'Supabase not configured. See instructions at top of script.');
     return;
   }
-  
+
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email: em, password: pw });
     if (error) throw error;
-    
+
     currentUser = data.user;
-    
+
     // Fetch profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', currentUser.id)
       .single();
-    
+
     if (profile) currentUser.profile = profile;
-    
+
     btn.disabled = false; btn.textContent = 'Log In';
     closeAuth();
     updAuthUI();
@@ -672,20 +643,20 @@ async function doSignup() {
   const nm = (document.getElementById('sName').value || '').trim();
   const em = (document.getElementById('sEmail').value || '').trim();
   const pw = document.getElementById('sPw').value || '';
-  
+
   if (!nm || nm.length < 2) { fErr('sNameE', 'Name must be 2+ chars'); return; }
   if (!em) { fErr('sEmailE', 'Enter email'); return; }
   if (!pw || pw.length < 6) { fErr('sPwE', 'Password must be 6+ chars'); return; }
-  
+
   const btn = document.getElementById('sBtn');
   btn.disabled = true; btn.textContent = 'Creating...';
-  
+
   if (!supabase) {
     btn.disabled = false; btn.textContent = 'Create Account';
     toast('❌', 'Supabase not configured');
     return;
   }
-  
+
   try {
     const { data, error } = await supabase.auth.signUp({
       email: em,
@@ -693,12 +664,12 @@ async function doSignup() {
       options: { data: { name: nm, avatar: nm[0].toUpperCase() } }
     });
     if (error) throw error;
-    
+
     currentUser = data.user;
-    
+
     btn.disabled = false; btn.textContent = 'Create Account';
     closeAuth();
-    
+
     if (data.session) {
       updAuthUI();
       refreshAll();
@@ -739,14 +710,14 @@ function updAuthUI() {
     const av = p.avatar || name[0].toUpperCase();
     const c1 = p.avatar_color1 || '#FF2442';
     const c2 = p.avatar_color2 || '#FF6B81';
-    
+
     a.innerHTML = '<div class="avsm" style="background:linear-gradient(135deg,'+c1+','+c2+')" onclick="togDD()">' + esc(av) + '</div>';
-    
+
     const ddAv = document.getElementById('ddAv');
     if (ddAv) { ddAv.style.background = 'linear-gradient(135deg,'+c1+','+c2+')'; ddAv.textContent = av; }
     const ddNm = document.getElementById('ddNm'); if (ddNm) ddNm.textContent = name;
     const ddEm = document.getElementById('ddEm'); if (ddEm) ddEm.textContent = currentUser.email || '';
-    
+
     const pAv = document.getElementById('pAv');
     if (pAv) { pAv.textContent = av; pAv.style.background = 'linear-gradient(135deg,'+c1+','+c2+')'; pAv.style.color = '#fff'; }
     const pNm = document.getElementById('pNm'); if (pNm) pNm.textContent = name;
@@ -772,24 +743,24 @@ document.addEventListener('click', function(e) {
 async function refreshFeed() {
   const grid = document.getElementById('mGrid');
   if (!grid) return;
-  
+
   if (!supabase) {
     grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--tl)">⚠️ Supabase not configured.<br><small>See instructions at top of index.html</small></div>';
     return;
   }
-  
+
   try {
     let query = supabase
       .from('posts')
       .select('*, profiles:user_id(name, avatar, avatar_color1, avatar_color2)')
       .order('created_at', { ascending: false })
       .limit(50);
-    
+
     if (curCat !== 'all') query = query.eq('category', curCat);
-    
+
     const { data, error } = await query;
     if (error) throw error;
-    
+
     renderFeed(grid, data || []);
   } catch (e) {
     console.error('Feed error:', e);
@@ -826,7 +797,7 @@ function switchCat(el) {
 async function doLike(pid, el) {
   if (!currentUser) { openAuth('login'); return; }
   if (!supabase) return;
-  
+
   try {
     const { data: existing } = await supabase
       .from('likes')
@@ -834,7 +805,7 @@ async function doLike(pid, el) {
       .eq('user_id', currentUser.id)
       .eq('post_id', pid)
       .maybeSingle();
-    
+
     if (existing) {
       await supabase.from('likes').delete().eq('id', existing.id);
       el.classList.remove('on');
@@ -844,7 +815,7 @@ async function doLike(pid, el) {
       el.classList.add('on');
       el.querySelector('svg').setAttribute('fill', 'var(--clr)');
     }
-    
+
     // Refresh count
     const { data: post } = await supabase.from('posts').select('likes_count').eq('id', pid).single();
     if (post) el.querySelector('span').textContent = fmtN(post.likes_count);
@@ -858,7 +829,7 @@ async function doLike(pid, el) {
 async function openPost(p) {
   if (!p) return;
   curPost = p;
-  
+
   document.getElementById('mImg').src = p.image_url || '';
   const prof = p.profiles || {};
   const c1 = prof.avatar_color1 || '#FF6B6B';
@@ -871,7 +842,7 @@ async function openPost(p) {
   document.getElementById('mDsc').textContent = p.description || '';
   document.getElementById('mLkC').textContent = fmtN(p.likes_count);
   document.getElementById('mTgs').innerHTML = (p.tags || []).map(t => '<span class="mtag">' + esc(t) + '</span>').join('');
-  
+
   // Load comments
   if (supabase) {
     const { data: cmnts } = await supabase
@@ -879,14 +850,14 @@ async function openPost(p) {
       .select('*, profiles:user_id(name, avatar)')
       .eq('post_id', p.id)
       .order('created_at', { ascending: false });
-    
+
     document.getElementById('cTtl').textContent = 'Comments (' + (cmnts?.length || 0) + ')';
     document.getElementById('cList').innerHTML = (cmnts || []).map(c => {
       const cp = c.profiles || {};
       return '<div class="cmti"><div class="cmav">' + esc((cp.avatar || c.user || '?')[0]) + '</div><div class="cmbd"><div class="cmus">' + esc(cp.name || c.user || 'User') + '</div><div class="ctx">' + esc(c.text) + '</div><div class="ctm">' + timeAgo(c.created_at) + '</div></div></div>';
     }).join('');
   }
-  
+
   document.getElementById('postMov').classList.add('on');
   document.body.classList.add('lock');
 }
@@ -915,7 +886,7 @@ async function addCmt() {
   if (!inp) return;
   const t = inp.value.trim();
   if (!t || !curPost || !currentUser) { if (!currentUser) openAuth('login'); return; }
-  
+
   try {
     await supabase.from('comments').insert({
       post_id: curPost.id,
@@ -935,14 +906,14 @@ async function addCmt() {
 async function renderShop() {
   const grid = document.getElementById('pGrid');
   if (!grid || !supabase) return;
-  
+
   try {
     let query = supabase.from('products').select('*').eq('is_active', true).order('created_at', { ascending: false });
     if (shopCat !== 'all') query = query.eq('category', shopCat);
-    
+
     const { data, error } = await query;
     if (error) throw error;
-    
+
     grid.innerHTML = '';
     (data || []).forEach(function(p, i) {
       const stars = '★'.repeat(Math.floor(p.rating || 0));
@@ -1096,7 +1067,7 @@ async function refreshAll() {
       setStatus('⚠️ Configure Supabase credentials', true);
       document.getElementById('splash').classList.add('hide');
       setTimeout(() => document.getElementById('splash').style.display = 'none', 600);
-      
+
       // Show setup instructions
       const grid = document.getElementById('mGrid');
       if (grid) {
@@ -1104,12 +1075,12 @@ async function refreshAll() {
       }
       return;
     }
-    
+
     if (!supabase) {
       setStatus('❌ Failed to connect to Supabase', true);
       return;
     }
-    
+
     // Check for existing session
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
@@ -1121,15 +1092,15 @@ async function refreshAll() {
     } else {
       setStatus('✅ Connected to Supabase');
     }
-    
+
     await refreshAll();
-    
+
     // Hide splash
     setTimeout(function() {
       document.getElementById('splash').classList.add('hide');
       setTimeout(function() { document.getElementById('splash').style.display = 'none'; }, 600);
     }, 800);
-    
+
   } catch (e) {
     console.error('Init error:', e);
     setStatus('❌ ' + e.message, true);
@@ -1139,19 +1110,3 @@ async function refreshAll() {
 </script>
 </body>
 </html>
-
-
-              <script>
-                              // BEFORE (placeholders):
-const SUPABASE_URL     = 'YOUR_SUPABASE_URL_HERE';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
-
-// AFTER (your real values):
-const SUPABASE_URL     = 'https://abcdefghijk.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZW...';
-
-
-              </script>
-                        </body>
-                        </html>
-                    
