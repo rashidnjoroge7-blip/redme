@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import type { FeedPost } from "@/lib/data/posts";
 import { FEED_CATEGORIES } from "@/lib/data/feed";
 import { PostActions } from "@/components/feed/PostActions";
