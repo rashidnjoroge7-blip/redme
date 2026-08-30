@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function MarketplacePage() {
@@ -7,7 +8,7 @@ export default async function MarketplacePage() {
   return (
     <main className="min-h-screen bg-neutral-50 px-4 py-10">
       <div className="mx-auto max-w-6xl">
-        <a href="/" className="text-sm font-semibold text-[#ff2442]">← RedNote</a>
+        <Link href="/" className="text-sm font-semibold text-[#ff2442]">← RedNote</Link>
         <div className="mt-6"><h1 className="text-4xl font-black">Marketplace</h1><p className="mt-2 text-neutral-500">Discover products from RedNote sellers.</p></div>
         {error ? <div className="mt-8 rounded-2xl bg-red-50 p-5 text-sm text-red-700">Unable to load marketplace.</div> : (
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
