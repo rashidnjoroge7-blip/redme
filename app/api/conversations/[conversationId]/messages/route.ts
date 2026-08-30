@@ -3,6 +3,12 @@ import { NextResponse } from "next/server";
 
 const MAX_BODY_LENGTH = 4000;
 
+type NewMessage = {
+  conversation_id: string;
+  sender_id: string;
+  body: string;
+};
+
 async function authorizedClient(conversationId: string) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -39,7 +45,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ con
   const content = body && typeof body === "object" && typeof (body as Record<string, unknown>).body === "string" ? (body as Record<string, unknown>).body.trim().slice(0, MAX_BODY_LENGTH) : "";
   if (!content) return NextResponse.json({ error: "Message cannot be empty." }, { status: 400 });
 
-  const { data, error } = await supabase.from("messages").insert({ conversation_id: conversationId, sender_id: userId, body: content }).select("id, conversation_id, sender_id, body, created_at, edited_at").single();
+  const payload: NewMessage = { conversation_id: conversationId, sender_id: userId, body: content };
+  const { data, error } = await supabase.from("messages").insert(payload as never).select("id, conversation_id, sender_id, body, created_at, edited_at").single();
   if (error) return NextResponse.json({ error: "Unable to send message." }, { status: 400 });
   return NextResponse.json({ message: data }, { status: 201 });
 }
