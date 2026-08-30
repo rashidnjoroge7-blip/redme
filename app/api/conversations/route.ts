@@ -28,14 +28,11 @@ export async function POST(request: Request) {
     ? (body as Record<string, unknown>).userId : "";
   if (!participantId || participantId === userId) return NextResponse.json({ error: "Choose another user." }, { status: 400 });
 
-  const { data: conversation, error: conversationError } = await supabase.from("conversations").insert({}).select("id").single();
-  if (conversationError || !conversation) return NextResponse.json({ error: "Unable to create conversation." }, { status: 500 });
+  const { data: conversationId, error } = await supabase.rpc("create_direct_conversation", { other_user_id: participantId });
+  if (error || !conversationId) {
+    console.error("Conversation creation failed", error);
+    return NextResponse.json({ error: "Unable to create conversation." }, { status: 400 });
+  }
 
-  const { error: participantsError } = await supabase.from("conversation_participants").insert([
-    { conversation_id: conversation.id, user_id: userId },
-    { conversation_id: conversation.id, user_id: participantId },
-  ]);
-
-  if (participantsError) return NextResponse.json({ error: "Unable to add conversation participants." }, { status: 500 });
-  return NextResponse.json({ conversation }, { status: 201 });
+  return NextResponse.json({ conversation: { id: conversationId } }, { status: 201 });
 }
