@@ -1,35 +1,68 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+type CallbackItem = {
+  Name?: string;
+  Value?: string | number | null;
+};
+
+type StkCallback = {
+  CheckoutRequestID?: unknown;
+  ResultCode?: unknown;
+  ResultDesc?: unknown;
+  CallbackMetadata?: { Item?: CallbackItem[] };
+};
+
+type MpesaCallbackPayload = {
+  Body?: { stkCallback?: StkCallback };
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
 export async function POST(request: Request) {
   let payload: unknown;
-  try { payload = await request.json(); } catch { return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid payload" }, { status: 400 }); }
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid payload" }, { status: 400 });
+  }
 
-  const callback = (payload as Record<string, any>)?.Body?.stkCallback;
+  const root = isRecord(payload) ? payload as MpesaCallbackPayload : {};
+  const callback = root.Body?.stkCallback;
   const checkoutRequestId = typeof callback?.CheckoutRequestID === "string" ? callback.CheckoutRequestID : "";
   const resultCode = Number(callback?.ResultCode);
-  if (!checkoutRequestId || !Number.isInteger(resultCode)) return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid callback" }, { status: 400 });
 
-  const items = Array.isArray(callback?.CallbackMetadata?.Item) ? callback.CallbackMetadata.Item : [];
-  const getValue = (name: string) => items.find((item: any) => item?.Name === name)?.Value;
+  if (!checkoutRequestId || !Number.isInteger(resultCode)) {
+    return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid callback" }, { status: 400 });
+  }
+
+  const items = callback.CallbackMetadata?.Item ?? [];
+  const getValue = (name: string): string | number | null | undefined =>
+    items.find((item) => item.Name === name)?.Value;
   const receipt = getValue("MpesaReceiptNumber");
-  const amount = resultCode === 0 ? Number(getValue("Amount")) : null;
-  const phone = resultCode === 0 && getValue("PhoneNumber") != null ? String(getValue("PhoneNumber")) : null;
+  const amountValue = getValue("Amount");
+  const phoneValue = getValue("PhoneNumber");
+  const amount = resultCode === 0 ? Number(amountValue) : null;
+  const phone = resultCode === 0 && phoneValue != null ? String(phoneValue) : null;
 
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase.rpc("reconcile_mpesa_payment", {
       p_checkout_request_id: checkoutRequestId,
       p_result_code: resultCode,
-      p_result_description: String(callback?.ResultDesc ?? ""),
+      p_result_description: String(callback.ResultDesc ?? ""),
       p_receipt: receipt ? String(receipt) : null,
       p_callback_amount: Number.isFinite(amount) ? amount : null,
       p_callback_phone: phone,
     });
+
     if (error) {
       console.error("M-Pesa reconciliation failed", error);
       return NextResponse.json({ ResultCode: 1, ResultDesc: "Reconciliation failed" }, { status: 500 });
     }
+
     return NextResponse.json({ ResultCode: 0, ResultDesc: String(data ?? "Accepted") });
   } catch (error) {
     console.error("M-Pesa callback processing failed", error);
