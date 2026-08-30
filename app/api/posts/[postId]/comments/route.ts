@@ -44,10 +44,14 @@ export async function POST(
 
   if (!content) return NextResponse.json({ error: "Comment cannot be empty." }, { status: 400 });
 
-  const payload = { post_id: postId, user_id: userId, content };
+  const payload: { post_id: string; user_id: string; content: string } = {
+    post_id: postId,
+    user_id: userId,
+    content,
+  };
   const { data, error } = await supabase
     .from("comments")
-    .insert(payload)
+    .insert(payload as never)
     .select("id, post_id, user_id, content, created_at, updated_at")
     .single();
 
