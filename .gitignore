@@ -1,8 +1,19 @@
-# Local Netlify folder
-.netlify
-# .gitignore
+﻿# Local Netlify folder
+.netlify/
+
+# Dependencies
 node_modules/
+
+# Next.js generated files
+.next/
+tsconfig.tsbuildinfo
+
+# OS files
 .DS_Store
+
+# Logs
 *.log
+
+# Local environment
 .env
 .env.local
