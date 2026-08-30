@@ -20,9 +20,9 @@ async function authorizedClient(conversationId: string) {
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ conversationId: string }> }) {
-  const { supabase, authorized } = await authorizedClient((await params).conversationId);
-  if (!authorized) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   const conversationId = (await params).conversationId;
+  const { supabase, authorized } = await authorizedClient(conversationId);
+  if (!authorized) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
   const { data, error } = await supabase.from("messages").select("id, conversation_id, sender_id, body, created_at, edited_at").eq("conversation_id", conversationId).order("created_at", { ascending: true }).limit(100);
   if (error) return NextResponse.json({ error: "Unable to load messages." }, { status: 500 });
   return NextResponse.json({ messages: data ?? [] });
