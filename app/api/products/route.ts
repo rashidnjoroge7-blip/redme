@@ -1,6 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+function validProductMediaUrl(value: string) {
+  if (!value) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.pathname.includes("/storage/v1/object/public/product-media/");
+  } catch { return false; }
+}
+
 export async function GET() {
   const supabase = await createClient();
   const { data, error } = await supabase.from("products").select("id, seller_id, name, description, price_kes, image_url, stock, status, created_at").eq("status", "active").order("created_at", { ascending: false }).limit(100);
@@ -23,7 +31,7 @@ export async function POST(request: Request) {
   const stock = typeof input.stock === "number" ? input.stock : Number(input.stock);
   const imageUrl = typeof input.image_url === "string" ? input.image_url.trim().slice(0, 2048) : "";
   if (!name || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0) return NextResponse.json({ error: "Valid name, price and stock are required." }, { status: 400 });
-  if (imageUrl && !/^https:\/\//i.test(imageUrl)) return NextResponse.json({ error: "Image URL must use HTTPS." }, { status: 400 });
+  if (!validProductMediaUrl(imageUrl)) return NextResponse.json({ error: "Product image must be uploaded to RedNote storage." }, { status: 400 });
   const { data, error } = await supabase.from("products").insert({ seller_id: sellerId, name, description: description || null, price_kes: price, stock, image_url: imageUrl || null, status: stock > 0 ? "active" : "sold_out" }).select("id, seller_id, name, description, price_kes, image_url, stock, status, created_at").single();
   if (error) return NextResponse.json({ error: "Unable to create product." }, { status: 400 });
   return NextResponse.json({ product: data }, { status: 201 });
