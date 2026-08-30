@@ -41,8 +41,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ con
   if (!authorized) return NextResponse.json({ error: "Conversation not found." }, { status: 404 });
 
   let body: unknown;
-  try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 }); }
-  const content = body && typeof body === "object" && typeof (body as Record<string, unknown>).body === "string" ? (body as Record<string, unknown>).body.trim().slice(0, MAX_BODY_LENGTH) : "";
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  const rawBody = body && typeof body === "object" ? (body as Record<string, unknown>).body : undefined;
+  const content = typeof rawBody === "string" ? rawBody.trim().slice(0, MAX_BODY_LENGTH) : "";
   if (!content) return NextResponse.json({ error: "Message cannot be empty." }, { status: 400 });
 
   const payload: NewMessage = { conversation_id: conversationId, sender_id: userId, body: content };
