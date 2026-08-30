@@ -38,9 +38,9 @@ proxy.ts                        Next.js request proxy
 
 ## Authentication architecture
 
-The migration now uses the current Supabase SSR architecture. Supabase recommends `@supabase/ssr` for Next.js server-side authentication, with separate browser and server clients and a request proxy that refreshes sessions. citehttps://supabase.com/nextjs
+The migration now uses the Supabase SSR architecture with separate browser and server clients and a request proxy for session refresh.
 
-Sessions are managed through the SSR client's cookie-based storage rather than a custom application token store. Supabase's SSR documentation recommends PKCE for SSR flows and distinguishes `getClaims()`/`getUser()` for verification from `getSession()` when raw tokens are actually required. citehttps://supabase.com/docs/guides/auth/server-side/advanced-guide
+Sessions are managed through the SSR client's cookie-based storage rather than a custom application token store. The server-side implementation uses `getClaims()` to verify authenticated access and `getUser()` when the current user record is required.
 
 The browser client expects:
 
