@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   if (!participantId || participantId === userId) return NextResponse.json({ error: "Choose another user." }, { status: 400 });
 
   const { data: conversationId, error } = await supabase.rpc("create_direct_conversation", { other_user_id: participantId });
-  if (error || !conversationId) {
+  if (error || typeof conversationId !== "string" || !conversationId) {
     console.error("Conversation creation failed", error);
     return NextResponse.json({ error: "Unable to create conversation." }, { status: 400 });
   }
