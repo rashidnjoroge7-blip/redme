@@ -1,9 +1,12 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+// These commerce/messaging tables are still being reconciled against the
+// production Supabase schema. Keep their shape permissive until generated
+// Supabase types can replace this provisional contract.
 type GenericTable = {
-  Row: Record<string, unknown>;
-  Insert: Record<string, unknown>;
-  Update: Record<string, unknown>;
+  Row: Record<string, any>;
+  Insert: Record<string, any>;
+  Update: Record<string, any>;
   Relationships: [];
 };
 
@@ -16,7 +19,7 @@ type ReconcileMpesaPaymentArgs = {
   p_callback_phone: string | null;
 };
 
-type GenericFunction = { Args: Record<string, unknown>; Returns: Json };
+type GenericFunction = { Args: Record<string, any>; Returns: Json };
 
 export type Database = {
   public: {
@@ -27,6 +30,10 @@ export type Database = {
       likes: { Row: { user_id: string; post_id: string; created_at: string }; Insert: { user_id: string; post_id: string }; Update: never; Relationships: [] };
       saves: { Row: { user_id: string; post_id: string; created_at: string }; Insert: { user_id: string; post_id: string }; Update: never; Relationships: [] };
       follows: { Row: { follower_id: string; following_id: string; created_at: string }; Insert: { follower_id: string; following_id: string }; Update: never; Relationships: [] };
+      conversations: GenericTable;
+      conversation_participants: GenericTable;
+      messages: GenericTable;
+      notifications: GenericTable;
       products: GenericTable;
       carts: GenericTable;
       cart_items: GenericTable;
