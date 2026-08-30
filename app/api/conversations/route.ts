@@ -28,8 +28,10 @@ export async function POST(request: Request) {
     ? (body as Record<string, unknown>).userId : "";
   if (!participantId || participantId === userId) return NextResponse.json({ error: "Choose another user." }, { status: 400 });
 
-  const { data, error } = await supabase.rpc("create_direct_conversation", { other_user_id: participantId });
-  const conversationId = typeof data === "string" ? data : "";
+  const { data, error } = await supabase.rpc("create_direct_conversation", {
+    other_user_id: participantId,
+  } as never);
+  const conversationId: string = typeof (data as unknown) === "string" ? (data as string) : "";
   if (error || !conversationId) {
     console.error("Conversation creation failed", error);
     return NextResponse.json({ error: "Unable to create conversation." }, { status: 400 });
