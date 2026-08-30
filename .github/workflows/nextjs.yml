@@ -6,9 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: example-publishable-key
@@ -27,5 +31,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Build
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
         run: npm run build
