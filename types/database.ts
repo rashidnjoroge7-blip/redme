@@ -1,6 +1,22 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-type GenericTable = { Row: Record<string, any>; Insert: Record<string, any>; Update: Record<string, any>; Relationships: [] };
+type GenericTable = {
+  Row: Record<string, unknown>;
+  Insert: Record<string, unknown>;
+  Update: Record<string, unknown>;
+  Relationships: [];
+};
+
+type ReconcileMpesaPaymentArgs = {
+  p_checkout_request_id: string;
+  p_result_code: number;
+  p_result_description: string;
+  p_receipt: string | null;
+  p_callback_amount: number | null;
+  p_callback_phone: string | null;
+};
+
+type GenericFunction = { Args: Record<string, unknown>; Returns: Json };
 
 export type Database = {
   public: {
@@ -22,8 +38,8 @@ export type Database = {
     Functions: {
       checkout_cart: { Args: Record<string, never>; Returns: string };
       release_expired_reservations: { Args: Record<string, never>; Returns: number };
-      reconcile_mpesa_payment: { Args: Record<string, any>; Returns: string };
-      [key: string]: { Args: Record<string, any>; Returns: any };
+      reconcile_mpesa_payment: { Args: ReconcileMpesaPaymentArgs; Returns: string };
+      [key: string]: GenericFunction;
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
