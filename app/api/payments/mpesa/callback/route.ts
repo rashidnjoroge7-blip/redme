@@ -31,8 +31,13 @@ export async function POST(request: Request) {
 
   const root = isRecord(payload) ? payload as MpesaCallbackPayload : {};
   const callback = root.Body?.stkCallback;
-  const checkoutRequestId = typeof callback?.CheckoutRequestID === "string" ? callback.CheckoutRequestID : "";
-  const resultCode = Number(callback?.ResultCode);
+
+  if (!callback) {
+    return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid callback" }, { status: 400 });
+  }
+
+  const checkoutRequestId = typeof callback.CheckoutRequestID === "string" ? callback.CheckoutRequestID : "";
+  const resultCode = Number(callback.ResultCode);
 
   if (!checkoutRequestId || !Number.isInteger(resultCode)) {
     return NextResponse.json({ ResultCode: 1, ResultDesc: "Invalid callback" }, { status: 400 });
