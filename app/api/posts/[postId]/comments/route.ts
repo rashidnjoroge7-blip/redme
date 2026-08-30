@@ -38,23 +38,24 @@ export async function POST(
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const content = body && typeof body === "object" && typeof (body as Record<string, unknown>).content === "string"
-    ? (body as Record<string, unknown>).content.trim().slice(0, 2000)
-    : "";
+  const rawContent = body && typeof body === "object" ? (body as Record<string, unknown>).content : undefined;
+  const content = typeof rawContent === "string" ? rawContent.trim().slice(0, 2000) : "";
 
   if (!content) return NextResponse.json({ error: "Comment cannot be empty." }, { status: 400 });
 
-  const payload: { post_id: string; user_id: string; content: string } = {
-    post_id: postId,
-    user_id: userId,
-    content,
-  };
+  const payload: DatabaseCommentInsert = { post_id: postId, user_id: userId, content };
   const { data, error } = await supabase
     .from("comments")
-    .insert(payload as never)
+    .insert(payload)
     .select("id, post_id, user_id, content, created_at, updated_at")
     .single();
 
   if (error) return NextResponse.json({ error: "Unable to create comment." }, { status: 500 });
   return NextResponse.json({ comment: data }, { status: 201 });
 }
+
+type DatabaseCommentInsert = {
+  post_id: string;
+  user_id: string;
+  content: string;
+};
