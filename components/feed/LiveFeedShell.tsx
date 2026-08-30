@@ -2,6 +2,7 @@
 
 import type { FeedPost } from "@/lib/data/posts";
 import { FEED_CATEGORIES } from "@/lib/data/posts";
+import { PostActions } from "@/components/feed/PostActions";
 
 function formatDate(value: string | null) {
   if (!value) return "Recently";
@@ -29,13 +30,8 @@ export function LiveFeedShell({
             const href = item === "All"
               ? `/feed${search ? `?q=${encodeURIComponent(search)}` : ""}`
               : `/feed?category=${encodeURIComponent(item)}${search ? `&q=${encodeURIComponent(search)}` : ""}`;
-
             return (
-              <a
-                key={item}
-                href={href}
-                className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold ${activeCategory === item ? "bg-[#ff2442] text-white" : "bg-neutral-100 text-neutral-600"}`}
-              >
+              <a key={item} href={href} className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold ${activeCategory === item ? "bg-[#ff2442] text-white" : "bg-neutral-100 text-neutral-600"}`}>
                 {item}
               </a>
             );
@@ -51,13 +47,9 @@ export function LiveFeedShell({
       )}
 
       {error ? (
-        <div className="mx-4 my-6 rounded-2xl border border-red-100 bg-red-50 p-5 text-sm text-red-700">
-          The RedNote feed is temporarily unavailable. Please try again shortly.
-        </div>
+        <div className="mx-4 my-6 rounded-2xl border border-red-100 bg-red-50 p-5 text-sm text-red-700">The RedNote feed is temporarily unavailable. Please try again shortly.</div>
       ) : posts.length === 0 ? (
-        <div className="mx-4 my-6 rounded-2xl border border-black/5 bg-white p-8 text-center text-sm text-neutral-500">
-          No posts found. Try another category or search term.
-        </div>
+        <div className="mx-4 my-6 rounded-2xl border border-black/5 bg-white p-8 text-center text-sm text-neutral-500">No posts found. Try another category or search term.</div>
       ) : (
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-4">
           {posts.map((post) => (
@@ -73,8 +65,9 @@ export function LiveFeedShell({
                 {post.description && <p className="mt-2 line-clamp-3 text-sm text-neutral-600">{post.description}</p>}
                 <div className="mt-4 flex items-center justify-between text-xs text-neutral-500">
                   <span>{formatDate(post.createdAt)}</span>
-                  <span>{post.likesCount} likes · {post.commentsCount} comments</span>
+                  <span>{post.commentsCount} comments</span>
                 </div>
+                <PostActions postId={post.id} initialLikes={post.likesCount} />
               </div>
             </article>
           ))}
