@@ -103,7 +103,7 @@ The migration adds indexes, enables RLS, applies ownership-scoped mutation polic
 9. Port admin/moderation functionality with server-side authorization and RLS.
 10. Replace remaining legacy CSS with reusable Tailwind components while preserving the current RedNote visual design.
 11. Add automated unit/integration/e2e tests and production build validation.
-12. Remove `index.html` only after feature parity and production verification.
+12. Retire `index.html` after feature parity and production verification.
 
 ## Validation
 

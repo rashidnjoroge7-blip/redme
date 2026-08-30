@@ -198,7 +198,7 @@ Before enabling production M-Pesa:
 
 ## Migration note
 
-The application has migrated from the original single-file HTML implementation to the Next.js App Router architecture. `index.html` is retained temporarily as a migration artifact until final surface/reference verification is complete; it is not the Next.js application entry point.
+The application has migrated from the original single-file HTML implementation to the Next.js App Router architecture. The legacy `index.html` implementation has been retired; the Next.js App Router is now the sole application entry point.
 
 ## License
 
