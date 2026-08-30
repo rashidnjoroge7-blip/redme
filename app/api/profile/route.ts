@@ -5,6 +5,15 @@ function text(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
+function isAvatarStorageUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.pathname.startsWith("/storage/v1/object/public/avatars/");
+  } catch {
+    return false;
+  }
+}
+
 export async function PATCH(request: Request) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
@@ -19,7 +28,7 @@ export async function PATCH(request: Request) {
   const input = body as Record<string, unknown>;
   const username = text(input.username, 30).toLowerCase().replace(/[^a-z0-9_]/g, "");
   const avatarUrl = text(input.avatar_url, 2048);
-  if (avatarUrl && !/^https:\/\//i.test(avatarUrl)) return NextResponse.json({ error: "Avatar URL must use HTTPS." }, { status: 400 });
+  if (avatarUrl && !isAvatarStorageUrl(avatarUrl)) return NextResponse.json({ error: "Profile photos must use the avatars storage bucket." }, { status: 400 });
 
   const values = {
     id: userId,
