@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { initiateStkPush } from "@/lib/payments/mpesa";
 import { NextResponse } from "next/server";
 
 function normalizePhone(value: string) {
@@ -26,14 +27,22 @@ export async function POST(request: Request) {
   if (!order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
   if (order.status !== "pending" || order.payment_status !== "unpaid") return NextResponse.json({ error: "This order is not available for payment." }, { status: 409 });
 
-  // Daraja credentials and the actual OAuth/STK Push request belong here.
-  // They must remain server-side; never expose consumer secrets to React.
-  if (!process.env.MPESA_CONSUMER_KEY || !process.env.MPESA_CONSUMER_SECRET || !process.env.MPESA_PASSKEY || !process.env.MPESA_SHORTCODE) {
+  if (!process.env.MPESA_CONSUMER_KEY || !process.env.MPESA_CONSUMER_SECRET || !process.env.MPESA_PASSKEY || !process.env.MPESA_SHORTCODE || !process.env.MPESA_CALLBACK_URL) {
     return NextResponse.json({ error: "M-Pesa is not configured on the server yet." }, { status: 503 });
   }
 
   const { data: payment, error } = await supabase.from("payments").upsert({ order_id: order.id, provider: "mpesa", phone, amount_kes: order.total_kes, status: "pending", updated_at: new Date().toISOString() }, { onConflict: "order_id" }).select("id, order_id, amount_kes, phone, status").single();
-  if (error) return NextResponse.json({ error: "Unable to initialize payment." }, { status: 500 });
+  if (error || !payment) return NextResponse.json({ error: "Unable to initialize payment." }, { status: 500 });
 
-  return NextResponse.json({ payment, message: "Payment initialized. Daraja STK Push integration is ready for server credentials." }, { status: 202 });
+  try {
+    const response = await initiateStkPush({ amount: Number(order.total_kes), phone, accountReference: `RN${order.id.replace(/-/g, "").slice(0, 10)}`, description: "RedNote order", callbackUrl: process.env.MPESA_CALLBACK_URL });
+    const checkoutRequestId = response.CheckoutRequestID;
+    if (!checkoutRequestId) throw new Error("Daraja did not return CheckoutRequestID");
+    await supabase.from("payments").update({ merchant_request_id: response.MerchantRequestID ?? null, checkout_request_id: checkoutRequestId, updated_at: new Date().toISOString() }).eq("id", payment.id);
+    return NextResponse.json({ payment: { ...payment, checkout_request_id: checkoutRequestId }, message: response.CustomerMessage ?? "STK Push sent. Check your phone to complete payment." }, { status: 202 });
+  } catch (error) {
+    console.error("M-Pesa STK Push failed", error);
+    await supabase.from("payments").update({ status: "failed", result_description: "STK Push initiation failed", updated_at: new Date().toISOString() }).eq("id", payment.id).neq("status", "paid");
+    return NextResponse.json({ error: "Unable to initiate M-Pesa payment." }, { status: 502 });
+  }
 }
