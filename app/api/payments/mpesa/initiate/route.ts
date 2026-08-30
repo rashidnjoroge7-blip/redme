@@ -1,0 +1,39 @@
+import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+
+function normalizePhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (/^2547\d{8}$/.test(digits)) return digits;
+  if (/^07\d{8}$/.test(digits)) return `254${digits.slice(1)}`;
+  if (/^7\d{8}$/.test(digits)) return `254${digits}`;
+  return null;
+}
+
+export async function POST(request: Request) {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+  if (!userId) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+
+  let body: unknown;
+  try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 }); }
+  const input = body as Record<string, unknown>;
+  const orderId = typeof input.orderId === "string" ? input.orderId : "";
+  const phone = typeof input.phone === "string" ? normalizePhone(input.phone) : null;
+  if (!orderId || !phone) return NextResponse.json({ error: "Valid order and Kenyan M-Pesa phone number are required." }, { status: 400 });
+
+  const { data: order } = await supabase.from("orders").select("id, buyer_id, total_kes, status, payment_status").eq("id", orderId).eq("buyer_id", userId).maybeSingle();
+  if (!order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
+  if (order.status !== "pending" || order.payment_status !== "unpaid") return NextResponse.json({ error: "This order is not available for payment." }, { status: 409 });
+
+  // Daraja credentials and the actual OAuth/STK Push request belong here.
+  // They must remain server-side; never expose consumer secrets to React.
+  if (!process.env.MPESA_CONSUMER_KEY || !process.env.MPESA_CONSUMER_SECRET || !process.env.MPESA_PASSKEY || !process.env.MPESA_SHORTCODE) {
+    return NextResponse.json({ error: "M-Pesa is not configured on the server yet." }, { status: 503 });
+  }
+
+  const { data: payment, error } = await supabase.from("payments").upsert({ order_id: order.id, provider: "mpesa", phone, amount_kes: order.total_kes, status: "pending", updated_at: new Date().toISOString() }, { onConflict: "order_id" }).select("id, order_id, amount_kes, phone, status").single();
+  if (error) return NextResponse.json({ error: "Unable to initialize payment." }, { status: 500 });
+
+  return NextResponse.json({ payment, message: "Payment initialized. Daraja STK Push integration is ready for server credentials." }, { status: 202 });
+}
