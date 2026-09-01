@@ -37,7 +37,17 @@ export async function POST(request: Request) {
   }
 
   const { data: product } = await supabase.from("products").select("id, stock, status").eq("id", productId).maybeSingle();
-  if (!product || product.status !== "active" || product.stock < quantity) return NextResponse.json({ error: "Product is unavailable or has insufficient stock." }, { status: 400 });
+  if (
+  !product ||
+  product.status !== "active" ||
+  product.stock === null ||
+  product.stock < quantity
+) {
+  return NextResponse.json(
+    { error: "Product is unavailable or has insufficient stock." },
+    { status: 400 },
+  );
+}
   const { data, error } = await supabase.from("cart_items").upsert({ cart_id: cartId, product_id: productId, quantity }, { onConflict: "cart_id,product_id" }).select("cart_id, product_id, quantity").single();
   if (error) return NextResponse.json({ error: "Unable to update cart." }, { status: 400 });
   return NextResponse.json({ item: data }, { status: 201 });
