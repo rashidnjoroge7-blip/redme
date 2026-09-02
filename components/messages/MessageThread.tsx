@@ -112,64 +112,87 @@ export function MessageThread({
   }
 
   return (
-    <div className="flex min-h-[60vh] flex-col rounded-3xl bg-white shadow-sm ring-1 ring-black/5">
-      <div className="flex-1 space-y-3 overflow-y-auto p-5">
+    <div className="glass-strong flex min-h-[60vh] flex-col overflow-hidden rounded-3xl">
+      {/* Messages */}
+      <div className="flex-1 space-y-3 overflow-y-auto p-5 sm:p-6">
         {messages.length === 0 ? (
-          <p className="py-10 text-center text-sm text-neutral-500">
-            Start the conversation.
-          </p>
+          <div className="flex min-h-[40vh] items-center justify-center">
+            <div className="glass rounded-2xl px-6 py-5 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#fff0f0] text-xl">
+                💬
+              </div>
+
+              <p className="mt-3 text-sm font-semibold text-neutral-500">
+                Start the conversation.
+              </p>
+            </div>
+          </div>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.sender_id === currentUserId
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
-            >
+          messages.map((message) => {
+            const ownMessage = message.sender_id === currentUserId;
+
+            return (
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
-                  message.sender_id === currentUserId
-                    ? "bg-[#ff2442] text-white"
-                    : "bg-neutral-100 text-neutral-800"
+                key={message.id}
+                className={`flex ${
+                  ownMessage ? "justify-end" : "justify-start"
                 }`}
               >
-                {message.content}
+                <div
+                  className={`max-w-[80%] rounded-3xl px-4 py-3 text-sm shadow-sm ${
+                    ownMessage
+                      ? "rounded-br-lg bg-[#ff2442] text-white shadow-[#ff2442]/10"
+                      : "rounded-bl-lg border border-white/70 bg-white/65 text-neutral-800 backdrop-blur-xl"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap break-words">
+                    {message.content}
+                  </p>
 
-                <div className="mt-1 text-[10px] opacity-60">
-                  {message.created_at
-                    ? new Intl.DateTimeFormat("en-KE", {
-                        timeStyle: "short",
-                      }).format(new Date(message.created_at))
-                    : ""}
+                  <div
+                    className={`mt-1.5 text-[10px] ${
+                      ownMessage ? "text-white/65" : "text-neutral-400"
+                    }`}
+                  >
+                    {message.created_at
+                      ? new Intl.DateTimeFormat("en-KE", {
+                          timeStyle: "short",
+                        }).format(new Date(message.created_at))
+                      : ""}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
-      <form onSubmit={send} className="border-t border-neutral-100 p-4">
+      {/* Composer */}
+      <form
+        onSubmit={send}
+        className="border-t border-white/60 bg-white/30 p-4 backdrop-blur-xl"
+      >
         <div className="flex gap-2">
           <input
             value={body}
             onChange={(event) => setBody(event.target.value)}
             maxLength={4000}
             placeholder="Write a message…"
-            className="min-w-0 flex-1 rounded-full bg-neutral-100 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#ff2442]/30"
+            className="glass-input min-w-0 flex-1 rounded-full px-4 py-3 text-sm outline-none"
           />
 
           <button
             type="submit"
             disabled={sending || !body.trim()}
-            className="rounded-full bg-[#ff2442] px-5 py-3 text-sm font-bold text-white disabled:opacity-50"
+            className="rednote-button rounded-full px-5 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50"
           >
             {sending ? "Sending…" : "Send"}
           </button>
         </div>
 
-        {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+        {error && (
+          <p className="glass-red mt-2 rounded-xl px-3 py-2 text-xs">{error}</p>
+        )}
       </form>
     </div>
   );
