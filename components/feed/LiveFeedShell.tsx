@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import type { FeedPost } from "@/lib/data/posts";
 import { FEED_CATEGORIES } from "@/lib/data/feed";
 import { PostActions } from "@/components/feed/PostActions";
@@ -63,7 +65,7 @@ export function LiveFeedShell({
       {search && (
         <div className="mx-auto max-w-6xl px-4 pt-5 text-sm text-neutral-500">
           Results for{" "}
-          <span className="font-semibold text-neutral-800">“{search}”</span>
+          <span className="font-semibold text-neutral-800">â€œ{search}â€</span>
           {activeCategory !== "All" && (
             <>
               {" "}
@@ -95,11 +97,12 @@ export function LiveFeedShell({
               {/* Post image */}
               {post.imageUrl ? (
                 <div className="relative overflow-hidden">
-                  <img
+                  <Image
                     src={post.imageUrl}
                     alt={post.title}
-                    className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                    loading="lazy"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 640px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
 
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1a1a1a]/15 via-transparent to-white/15" />
@@ -107,7 +110,7 @@ export function LiveFeedShell({
               ) : (
                 <div className="relative flex aspect-[4/5] items-center justify-center overflow-hidden bg-gradient-to-br from-[#fff0f0] via-white to-[#fff0f0] text-5xl">
                   <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px]" />
-                  <span className="relative">🇰🇪</span>
+                  <span className="relative">ðŸ‡°ðŸ‡ª</span>
                 </div>
               )}
 

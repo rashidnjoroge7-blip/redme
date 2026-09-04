@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -69,7 +70,7 @@ supabase
           href="/"
           className="inline-flex rounded-full border border-white/80 bg-white/60 px-4 py-2 text-sm font-semibold text-[#ff2442] shadow-sm backdrop-blur-xl transition hover:bg-white"
         >
-          ← Back to RedNote
+          â† Back to RedNote
         </Link>
 
         <section className="mt-6 overflow-hidden rounded-[2rem] border border-white/80 bg-white/65 shadow-[0_20px_70px_rgba(0,0,0,0.08)] backdrop-blur-2xl">
@@ -87,9 +88,11 @@ supabase
           <div className="relative px-6 pb-7 sm:px-8">
             <div className="-mt-14">
               {profile.avatar ? (
-                <img
+                <Image
                   src={profile.avatar}
                   alt={`${profile.name} profile photo`}
+                  width={112}
+                  height={112}
                   className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-xl ring-1 ring-black/5"
                 />
               ) : (
@@ -119,7 +122,7 @@ supabase
 
               {profile.location && (
                 <p className="mt-2 text-sm text-neutral-500">
-                  📍 {profile.location}
+                  ðŸ“ {profile.location}
                 </p>
               )}
 
@@ -166,7 +169,7 @@ supabase
           {!posts || posts.length === 0 ? (
             <div className="rounded-3xl border border-white/80 bg-white/65 p-8 text-center shadow-[0_12px_45px_rgba(0,0,0,0.05)] backdrop-blur-xl">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#fff0f0] text-2xl">
-                ✦
+                âœ¦
               </div>
               <p className="mt-4 text-sm font-semibold text-neutral-700">
                 No posts yet
@@ -183,9 +186,12 @@ supabase
                   className="overflow-hidden rounded-3xl border border-white/80 bg-white/65 shadow-[0_12px_45px_rgba(0,0,0,0.05)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-[0_18px_55px_rgba(255,36,66,0.08)]"
                 >
                   {post.image_url && (
-                    <img
+                    <Image
                       src={post.image_url}
                       alt={post.title}
+                      width={1200}
+                      height={800}
+                      sizes="(max-width: 768px) 100vw, 1200px"
                       className="max-h-[26rem] w-full object-cover"
                     />
                   )}

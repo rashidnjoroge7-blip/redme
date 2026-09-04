@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useState } from "react";
 import { ImageUploader } from "@/components/media/ImageUploader";
 
@@ -96,9 +98,11 @@ className="field"
 
     <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
       {avatarUrl ? (
-        <img
+        <Image
           src={avatarUrl}
           alt="Current profile"
+          width={96}
+          height={96}
           className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-lg ring-1 ring-[#ff2442]/10"
         />
       ) : (
