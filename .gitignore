@@ -19,3 +19,4 @@ tsconfig.tsbuildinfo
 .env.local
 
 supabase/.temp/
+.vercel
