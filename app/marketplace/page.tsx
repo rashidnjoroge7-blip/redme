@@ -20,7 +20,7 @@ export default async function MarketplacePage() {
           href="/"
           className="inline-flex items-center rounded-full border border-white/70 bg-white/65 px-4 py-2 text-sm font-bold text-[#ff2442] shadow-sm backdrop-blur-xl transition-all hover:bg-[#fff0f0] hover:shadow-md"
         >
-          â† RedNote
+          ← RedNote
         </Link>
 
         {/* Header */}
@@ -46,7 +46,7 @@ export default async function MarketplacePage() {
         ) : (products ?? []).length === 0 ? (
           <div className="mt-8 rounded-3xl border border-white/70 bg-white/65 p-10 text-center shadow-sm backdrop-blur-xl">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#fff0f0] text-2xl">
-              ðŸ›ï¸
+              🛍️
             </div>
 
             <h2 className="mt-4 font-bold text-[#1a1a1a]">No products yet</h2>
@@ -74,7 +74,7 @@ export default async function MarketplacePage() {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-4xl">
-                      ðŸ›ï¸
+                      🛍️
                     </div>
                   )}
 

@@ -36,24 +36,24 @@ export default async function PublicProfilePage({ params }: Props) {
       .select("*", { count: "exact", head: true })
       .eq("following_id", profile.id),
 
-supabase
-  .from("follows")
-  .select("*", { count: "exact", head: true })
-  .eq("follower_id", profile.id),
+    supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("follower_id", profile.id),
 
-supabase
-  .from("likes")
-  .select("*", { count: "exact", head: true })
-  .eq("user_id", profile.id),
+    supabase
+      .from("likes")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", profile.id),
 
-supabase
-  .from("posts")
-  .select(
-    "id, title, description, category, image_url, created_at, likes_count",
-  )
-  .eq("user_id", profile.id)
-  .order("created_at", { ascending: false })
-  .limit(20),
+    supabase
+      .from("posts")
+      .select(
+        "id, title, description, category, image_url, created_at, likes_count",
+      )
+      .eq("user_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   return (
@@ -70,7 +70,7 @@ supabase
           href="/"
           className="inline-flex rounded-full border border-white/80 bg-white/60 px-4 py-2 text-sm font-semibold text-[#ff2442] shadow-sm backdrop-blur-xl transition hover:bg-white"
         >
-          â† Back to RedNote
+          ← Back to RedNote
         </Link>
 
         <section className="mt-6 overflow-hidden rounded-[2rem] border border-white/80 bg-white/65 shadow-[0_20px_70px_rgba(0,0,0,0.08)] backdrop-blur-2xl">
@@ -122,7 +122,7 @@ supabase
 
               {profile.location && (
                 <p className="mt-2 text-sm text-neutral-500">
-                  ðŸ“ {profile.location}
+                  📍 {profile.location}
                 </p>
               )}
 
@@ -169,7 +169,7 @@ supabase
           {!posts || posts.length === 0 ? (
             <div className="rounded-3xl border border-white/80 bg-white/65 p-8 text-center shadow-[0_12px_45px_rgba(0,0,0,0.05)] backdrop-blur-xl">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#fff0f0] text-2xl">
-                âœ¦
+                ✦
               </div>
               <p className="mt-4 text-sm font-semibold text-neutral-700">
                 No posts yet
