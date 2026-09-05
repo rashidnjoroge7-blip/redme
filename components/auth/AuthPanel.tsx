@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { ForgotPassword } from "@/components/auth/ForgotPassword";
 
 export function AuthPanel() {
   const router = useRouter();
@@ -74,7 +75,9 @@ export function AuthPanel() {
       <div className="glass-strong rounded-3xl p-6 sm:p-8">
         <div className="rounded-2xl border border-white/70 bg-white/45 p-5 backdrop-blur-xl">
           <p className="text-sm font-medium text-neutral-500">Signed in as</p>
-          <p className="mt-1 break-all font-bold text-[#1a1a1a]">{userEmail}</p>
+          <p className="mt-1 break-all font-bold text-[#1a1a1a]">
+            {userEmail}
+          </p>
         </div>
 
         <form action="/auth/signout" method="post">
@@ -97,7 +100,9 @@ export function AuthPanel() {
 
         <div className="relative">
           <p className="text-2xl font-extrabold">🇰🇪 RedNote</p>
-          <p className="mt-1 text-sm text-white/85">Your Nairobi Life Guide</p>
+          <p className="mt-1 text-sm text-white/85">
+            Your Nairobi Life Guide
+          </p>
         </div>
       </div>
 
@@ -158,6 +163,8 @@ export function AuthPanel() {
             className="glass-input mt-1 w-full rounded-2xl px-4 py-3 outline-none"
           />
         </label>
+
+        {mode === "login" && <ForgotPassword />}
 
         <button
           type="submit"
