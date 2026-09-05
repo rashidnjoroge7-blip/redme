@@ -51,6 +51,7 @@ export function AuthPanel() {
               data: {
                 full_name: name.trim(),
               },
+              emailRedirectTo: `${window.location.origin}/auth/confirm`,
             },
           });
 
@@ -79,7 +80,6 @@ export function AuthPanel() {
             {userEmail}
           </p>
         </div>
-
         <form action="/auth/signout" method="post">
           <button
             type="submit"
@@ -97,12 +97,9 @@ export function AuthPanel() {
       <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-[#ff2442] to-[#ff6b81] p-6 text-white shadow-lg shadow-[#ff2442]/15">
         <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-white/15 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-10 -left-10 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
-
         <div className="relative">
           <p className="text-2xl font-extrabold">🇰🇪 RedNote</p>
-          <p className="mt-1 text-sm text-white/85">
-            Your Nairobi Life Guide
-          </p>
+          <p className="mt-1 text-sm text-white/85">Your Nairobi Life Guide</p>
         </div>
       </div>
 
@@ -136,7 +133,6 @@ export function AuthPanel() {
             />
           </label>
         )}
-
         <label className="block text-sm font-semibold text-neutral-800">
           Email
           <input
@@ -148,14 +144,11 @@ export function AuthPanel() {
             className="glass-input mt-1 w-full rounded-2xl px-4 py-3 outline-none"
           />
         </label>
-
         <label className="block text-sm font-semibold text-neutral-800">
           Password
           <input
             type="password"
-            autoComplete={
-              mode === "login" ? "current-password" : "new-password"
-            }
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             minLength={6}
@@ -163,31 +156,21 @@ export function AuthPanel() {
             className="glass-input mt-1 w-full rounded-2xl px-4 py-3 outline-none"
           />
         </label>
-
         {mode === "login" && <ForgotPassword />}
-
         <button
           type="submit"
           disabled={loading}
           className="rednote-button w-full rounded-full px-5 py-3.5 font-bold disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading
-            ? "Please wait…"
-            : mode === "login"
-              ? "Log In"
-              : "Create Account"}
+          {loading ? "Please wait…" : mode === "login" ? "Log In" : "Create Account"}
         </button>
       </form>
 
       {message && (
-        <p
-          role="status"
-          className="glass-red mt-4 rounded-2xl px-4 py-3 text-sm"
-        >
+        <p role="status" className="glass-red mt-4 rounded-2xl px-4 py-3 text-sm">
           {message}
         </p>
       )}
     </div>
   );
 }
-
