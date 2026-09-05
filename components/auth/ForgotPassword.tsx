@@ -23,9 +23,7 @@ export function ForgotPassword() {
     setMessage("");
 
     const supabase = createClient();
-
-    const redirectTo =
-      `${window.location.origin}/auth/callback?next=/reset-password`;
+    const redirectTo = `${window.location.origin}/auth/callback?next=/reset-password`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(
       normalizedEmail,
@@ -58,7 +56,6 @@ export function ForgotPassword() {
           <h3 className="text-sm font-semibold text-gray-900">
             Reset your password
           </h3>
-
           <p className="mt-1 text-xs leading-5 text-gray-500">
             Enter your email and we&apos;ll send you a secure password reset
             link.
@@ -76,7 +73,6 @@ export function ForgotPassword() {
               disabled={status === "loading"}
               className="glass-input w-full rounded-xl px-4 py-3 text-sm outline-none"
             />
-
             <button
               type="button"
               onClick={handleReset}
