@@ -37,7 +37,7 @@ export function LiveFeedShell({
                 key={item}
                 href={href}
                 className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-                  activeCategory === item
+                  activeCategory.toLowerCase() === item.toLowerCase()
                     ? "border-[#ff2442] bg-[#ff2442] text-white shadow-lg shadow-[#ff2442]/20"
                     : "border-white/70 bg-white/55 text-neutral-600 backdrop-blur-md hover:border-[#ff2442]/20 hover:bg-[#fff0f0] hover:text-[#ff2442]"
                 }`}
@@ -51,8 +51,9 @@ export function LiveFeedShell({
 
       {search && (
         <div className="mx-auto max-w-6xl px-4 pt-5 text-sm text-neutral-500">
-          Results for <span className="font-semibold text-neutral-800">“{search}”</span>
-          {activeCategory !== "All" && (
+          <span className="font-semibold text-neutral-800">{posts.length}</span> {posts.length === 1 ? "result" : "results"} for{" "}
+          <span className="font-semibold text-neutral-800">“{search}”</span>
+          {activeCategory.toLowerCase() !== "all" && (
             <> in <span className="font-semibold text-neutral-800">{activeCategory}</span></>
           )}
         </div>
@@ -64,7 +65,8 @@ export function LiveFeedShell({
         </div>
       ) : posts.length === 0 ? (
         <div className="glass-strong mx-4 my-6 rounded-3xl p-8 text-center text-sm text-neutral-500">
-          No posts found. Try another category or search term.
+          <p className="font-semibold text-neutral-800">No posts found</p>
+          <p className="mt-1">Try a broader keyword, another topic, or remove the category filter.</p>
         </div>
       ) : (
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 p-4 sm:grid-cols-2 lg:grid-cols-4">
