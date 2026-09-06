@@ -35,6 +35,11 @@ function escapeIlike(value: string) {
     .slice(0, 100);
 }
 
+function normalizeCategory(value: string | undefined) {
+  const category = value?.trim() ?? "";
+  return category && category.toLowerCase() !== "all" ? category : null;
+}
+
 export async function getFeedPosts(
   options: {
     limit?: number;
@@ -43,44 +48,77 @@ export async function getFeedPosts(
   } = {},
 ) {
   const limit = Math.min(Math.max(options.limit ?? 20, 1), 50);
-  const category =
-    options.category && options.category !== "All"
-      ? options.category
-      : null;
-  const search = options.search?.trim() ?? "";
+  const category = normalizeCategory(options.category);
+  const search = options.search?.trim().slice(0, 100) ?? "";
 
   const supabase = await createClient();
 
-  let query = supabase
-    .from("posts")
-    .select(
-      "id,user_id,title,description,category,image_url,likes_count,created_at",
-    )
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  let rows: Array<{
+    id: string;
+    user_id: string | null;
+    title: string;
+    description: string | null;
+    category: string;
+    image_url: string | null;
+    likes_count: number | null;
+    created_at: string | null;
+  }> = [];
 
-  if (category) {
-    query = query.eq("category", category);
-  }
-
-  const safeSearch = escapeIlike(search);
-
-  if (safeSearch) {
-    query = query.or(
-      `title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`,
+  if (search) {
+    // Prefer the indexed PostgreSQL search function. The fallback keeps the
+    // application compatible while migration 0018 is being deployed.
+    const { data: searchRows, error: searchError } = await supabase.rpc(
+      "search_posts",
+      {
+        search_text: search,
+        category_filter: category,
+        result_limit: limit,
+      },
     );
+
+    if (!searchError && searchRows) {
+      rows = searchRows;
+    } else {
+      let fallbackQuery = supabase
+        .from("posts")
+        .select(
+          "id,user_id,title,description,category,image_url,likes_count,created_at",
+        )
+        .or(
+          `title.ilike.%${escapeIlike(search)}%,description.ilike.%${escapeIlike(search)}%,category.ilike.%${escapeIlike(search)}%`,
+        )
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (category) {
+        fallbackQuery = fallbackQuery.ilike("category", category);
+      }
+
+      const { data, error } = await fallbackQuery;
+      if (error) {
+        return { posts: [] as FeedPost[], error };
+      }
+      rows = data ?? [];
+    }
+  } else {
+    let query = supabase
+      .from("posts")
+      .select(
+        "id,user_id,title,description,category,image_url,likes_count,created_at",
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (category) {
+      query = query.ilike("category", category);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      return { posts: [] as FeedPost[], error };
+    }
+    rows = data ?? [];
   }
-
-  const { data, error } = await query;
-
-  if (error) {
-    return {
-      posts: [] as FeedPost[],
-      error,
-    };
-  }
-
-  const rows = data ?? [];
 
   const posts: FeedPost[] = await Promise.all(
     rows.map(async (row) => {
