@@ -27,6 +27,33 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 export async function POST(request: Request) {
   let payload: unknown;
+  const configuredSecret = process.env.MPESA_CALLBACK_SECRET;
+
+  if (!configuredSecret) {
+    console.error("M-Pesa callback secret is not configured");
+
+    return NextResponse.json(
+      {
+        ResultCode: 1,
+        ResultDesc: "Callback not configured",
+      },
+      { status: 503 },
+    );
+  }
+
+  const pathname = new URL(request.url).pathname;
+  const pathParts = pathname.split("/").filter(Boolean);
+  const suppliedSecret = pathParts[pathParts.length - 1] ?? "";
+
+  if (suppliedSecret !== configuredSecret) {
+    return NextResponse.json(
+      {
+        ResultCode: 1,
+        ResultDesc: "Unauthorized",
+      },
+      { status: 401 },
+    );
+  }
 
   try {
     payload = await request.json();
