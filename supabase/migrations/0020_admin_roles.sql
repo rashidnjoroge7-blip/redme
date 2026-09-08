@@ -1,11 +1,18 @@
--- RedNote Stage 1: administrator authorization foundation.
+﻿-- RedNote Stage 1: administrator authorization foundation.
 -- Roles are stored on profiles and checked server-side through a SECURITY DEFINER RPC.
 
 alter table public.profiles
-  add column if not exists role text not null default 'user'
+  add column if not exists role text not null default 'user';
+
+alter table public.profiles
+  drop constraint if exists profiles_role_check;
+
+alter table public.profiles
+  add constraint profiles_role_check
   check (role in ('user', 'moderator', 'admin', 'super_admin'));
 
-create index if not exists profiles_role_idx on public.profiles (role);
+create index if not exists profiles_role_idx
+  on public.profiles (role);
 
 create or replace function public.is_admin_user()
 returns boolean
