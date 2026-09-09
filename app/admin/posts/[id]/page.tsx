@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/require-admin";
-import { moderatePost } from "../actions";
+import ModerationControls from "./ModerationControls";
 
 export const dynamic = "force-dynamic";
 
@@ -78,11 +78,7 @@ export default async function AdminPostReviewPage({ params }: { params: Promise<
           <section className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-black">Moderation action</h2>
             <p className="mt-1 text-sm text-neutral-500">Actions are executed by the protected database moderation RPC and recorded in the audit trail.</p>
-            <form action={moderatePost} className="mt-5 space-y-4">
-              <input type="hidden" name="postId" value={post.id} />
-              <label className="block"><span className="text-sm font-bold">Reason (optional)</span><textarea name="reason" maxLength={1000} rows={4} placeholder="Explain why this post is being hidden or restored…" className="mt-2 w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-[#ff2442]" /></label>
-              {isHidden ? <button name="action" value="restore" type="submit" className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white">Restore post</button> : <button name="action" value="hide" type="submit" className="rounded-xl bg-[#ff2442] px-5 py-3 text-sm font-bold text-white">Hide post</button>}
-            </form>
+            <ModerationControls postId={post.id} status={post.moderation_status} />
           </section>
         </section>
 
