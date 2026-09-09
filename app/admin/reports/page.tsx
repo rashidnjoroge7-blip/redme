@@ -32,7 +32,10 @@ const statusClasses: Record<Report["status"], string> = {
 export default async function AdminReportsPage({ searchParams }: { searchParams: Promise<{ status?: string; page?: string }> }) {
   const { admin } = await requireAdmin();
   const params = await searchParams;
-  const status = ["open", "under_review", "resolved", "dismissed"].includes(params.status ?? "") ? params.status : "open";
+  const requestedStatus = params.status;
+  const status: Report["status"] = ["open", "under_review", "resolved", "dismissed"].includes(requestedStatus ?? "")
+    ? (requestedStatus as Report["status"])
+    : "open";
   const requestedPage = Number.parseInt(params.page ?? "1", 10);
   const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
@@ -52,7 +55,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams:
   return (
     <div className="space-y-6">
       <header>
-        <Link href="/admin" className="text-sm font-bold text-[#ff2442]">← Admin Dashboard</Link>
+        <Link href="/admin" className="text-sm font-bold text-[#ff2442]">â† Admin Dashboard</Link>
         <p className="mt-4 text-sm font-bold uppercase tracking-[0.2em] text-[#ff2442]">Safety & moderation</p>
         <div className="mt-1 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div><h1 className="text-3xl font-black tracking-tight">Reports</h1><p className="mt-2 text-sm text-neutral-600">Review community reports and route confirmed violations into post moderation.</p></div>
