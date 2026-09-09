@@ -27,7 +27,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
   if (error || !order) notFound();
 
   const [{ data: buyer }, { data: items }, { data: payment }] = await Promise.all([
-    admin.from("profiles").select("id,name,email,phone,location").eq("id", order.buyer_id).maybeSingle(),
+    admin.from("profiles").select("id,name,email,location").eq("id", order.buyer_id).maybeSingle(),
     admin.from("order_items").select("id,product_id,seller_id,product_name,unit_price_kes,quantity,created_at").eq("order_id", id).order("created_at", { ascending: true }),
     admin.from("payments").select("id,provider,phone,amount_kes,status,merchant_request_id,checkout_request_id,result_code,result_description,mpesa_receipt,created_at,updated_at").eq("order_id", id).maybeSingle(),
   ]);
