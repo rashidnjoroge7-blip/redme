@@ -811,6 +811,10 @@ export type Database = {
 
 
     Functions: {
+      is_admin_user: {
+        Args: never;
+        Returns: boolean;
+      };
       search_posts: {
         Args: {
           search_text: string;
