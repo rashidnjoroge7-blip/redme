@@ -71,7 +71,7 @@ export async function getFeedPosts(
       "search_posts",
       {
         search_text: search,
-        category_filter: category,
+        category_filter: category ?? undefined,
         result_limit: limit,
       },
     );
