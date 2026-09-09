@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -62,7 +62,10 @@ export function AuthPanel() {
     }
 
     if (mode === "login") {
-      router.push("/account");
+      // Use the server-authoritative admin RPC for routing. Never trust a
+      // client-supplied role or user metadata for authorization decisions.
+      const { data: isAdmin } = await supabase.rpc("is_admin_user");
+      router.push(isAdmin === true ? "/admin" : "/account");
       router.refresh();
       return;
     }
