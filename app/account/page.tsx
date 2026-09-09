@@ -27,6 +27,7 @@ export default async function AccountPage() {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) redirect("/login");
 
+  const { data: isAdmin } = await supabase.rpc("is_admin_user");
   const { posts } = await getFeedPosts({ limit: 4 });
 
   return (
@@ -42,6 +43,9 @@ export default async function AccountPage() {
           <nav className="hidden items-center gap-2 sm:flex">
             <Link href="/feed" className="rounded-full px-4 py-2 text-sm font-bold text-neutral-700 hover:bg-white/70">Feed</Link>
             <Link href="/marketplace" className="rounded-full px-4 py-2 text-sm font-bold text-neutral-700 hover:bg-white/70">Market</Link>
+            {isAdmin === true && (
+              <Link href="/admin" className="rounded-full bg-[#ff2442] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:scale-[1.02]">Admin Dashboard</Link>
+            )}
           </nav>
           <form action="/auth/signout" method="post">
             <button className="rounded-full bg-[#ff2442] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:scale-[1.02]" type="submit">Log out</button>
@@ -58,10 +62,20 @@ export default async function AccountPage() {
             <div className="glass rounded-2xl px-4 py-3 lg:min-w-72">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#ff2442]">Signed in</p>
               <p className="mt-1 break-all text-sm font-semibold text-[#1a1a1a]">{userData.user.email}</p>
+              {isAdmin === true && (
+                <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[#ff2442]">Administrator access</p>
+              )}
             </div>
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            {isAdmin === true && (
+              <Link href="/admin" className="glass-hover glass rounded-3xl border border-[#ff2442]/20 p-5">
+                <span className="text-3xl">🛡️</span><h2 className="mt-4 font-black">Admin Dashboard</h2>
+                <p className="mt-1 text-sm leading-5 text-neutral-500">Manage RedNote with administrator tools and production metrics.</p>
+                <span className="mt-4 inline-block text-sm font-bold text-[#ff2442]">Open dashboard →</span>
+              </Link>
+            )}
             <Link href="/feed" className="glass-hover glass rounded-3xl p-5">
               <span className="text-3xl">📰</span><h2 className="mt-4 font-black">Explore Feed</h2>
               <p className="mt-1 text-sm leading-5 text-neutral-500">See the latest RedNote conversations.</p>
@@ -128,6 +142,7 @@ export default async function AccountPage() {
             <div className="mt-4 space-y-3">
               <Link href="/feed" className="glass-hover flex items-center justify-between rounded-2xl p-4"><span className="font-bold">Latest posts</span><span>→</span></Link>
               <Link href="/marketplace" className="glass-hover flex items-center justify-between rounded-2xl p-4"><span className="font-bold">Shop products</span><span>→</span></Link>
+              {isAdmin === true && <Link href="/admin" className="glass-hover flex items-center justify-between rounded-2xl p-4"><span className="font-bold">Admin Dashboard</span><span>→</span></Link>}
               <Link href="/" className="glass-hover flex items-center justify-between rounded-2xl p-4"><span className="font-bold">RedNote home</span><span>→</span></Link>
             </div>
             <div className="glass-red mt-5 rounded-2xl p-4 text-sm leading-6"><strong>Made for Nairobi.</strong><br />Discover what is happening around you, one story at a time.</div>
